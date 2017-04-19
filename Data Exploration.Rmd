@@ -82,7 +82,7 @@ This column is stored as a numeric ordinal variable representing whether “Ther
 
 Numeric scale variable representing the number of students in the teacher’s class, with 996, 997, 998, and 999 used to represent “Logically not applicable”, “Not reached”, “Not administered”, and “Omitted / Invalid respectively”.  In our data frame, the values 996, 997, 998 and 999 were converted to NA when we read in the data.  The numerical data in this column ranges from 1 to 99, which seems like a realistic range.  This column also has a lot of NA values, with roughly 18% of the observations having an NA value for the number of students in the class.
 
-* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (scale from 1 to 4)
+* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction
 
 Numeric variable ranging from 4.25 to 15.23, with values resulting from confirmatory factor analysis, with standard deviation of 2 and scale midpoint of 10.  9997, 9998, and 9990 were used to represent “Default”, “Not applicable”, and “Not Stated”, respectively.  In our data frame, the values 9997, 9998 and 9990 were converted to NA values when we read in the data.
 
