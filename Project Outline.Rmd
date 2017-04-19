@@ -9,6 +9,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r, message=FALSE, warning=FALSE}
+library("foreign")
+library("dplyr")
+library("tidyr")
+library("countrycode")
+library("rworldmap")
+library(ggplot2)
+library(reshape2)
+library(FNN)
+```
+
 ### Changes to Dataset from Last time
 ```{r}
 #To start, let's read in the cleaned dataset from our last submission:
@@ -20,7 +31,7 @@ indices <- grep("TT2G46", colnames(teacher_data))[-11]
 colnames(teacher_data)[indices] <- c("sat1", "sat2", "sat3", "sat4", "sat5", "sat6", "sat7", "sat8", "sat9", "sat10")
 names(teacher_data)[names(teacher_data)=="TT2G46_avg"] <- "sat_avg"
 
-#Column "TT2G15" contains no useful data, so we're going to remove it
+#Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
 teacher_data <- teacher_data[, -24]
 
 #Column "ID" is no longer necessary, was used for making the subject dataset
@@ -75,5 +86,23 @@ m3 <- lm(sat_avg ~ total_time, data=teacher_data)
 anova(m3)
 plot(teacher_data$sat_avg ~ teacher_data$total_time)
 abline(m3)
+
+Using stepwise regression
+```{r}
+# remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
+x <- na.omit(teacher_data[, -grep("sat", colnames(teacher_data))])
+m.full <- lm(TT2G46_avg ~., data=x)
+m.empty <- lm(TT2G46_avg ~ 1, data=x)
 ```
+Forward, backwards, and both
+```{r}
+m.forward <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="forward", trace=FALSE)
+m.backward <- step(m.full, scope=list(lower=m.empty),
+                  data=x, direction="backward", trace=FALSE)
+m.both <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="both", trace=FALSE)
+```
+
+
 
