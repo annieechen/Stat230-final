@@ -9,6 +9,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r, message=FALSE, warning=FALSE}
+library("foreign")
+library("dplyr")
+library("tidyr")
+library("countrycode")
+library("rworldmap")
+library(ggplot2)
+library(reshape2)
+```
+
 ### Changes to Dataset from Last time
 ```{r}
 #To start, let's read in the cleaned dataset from our last submission:
@@ -21,6 +31,15 @@ grep("TT2G46", colnames(teacher_data))[-11]
 
 ```
 
+#### Change to Plot 3
+
+This plot is a cleaner version of what we were trying to show with our last plot (from when we turned in the dataset)
+```{r}
+data_melted <- melt(teacher_data[,grep("TT2G46", colnames(teacher_data))], id.vars="TT2G46_avg")
+data_melted %>% ggplot(aes(x=variable, y=value)) + geom_boxplot() + labs(x="Individual Questions", y="Strongly Disagree to Strongly Agree", title="Average Response vs Individual Questions for Satisfaction")
+```
+
+
 ### Main Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
 (2) How do teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
@@ -29,5 +48,12 @@ grep("TT2G46", colnames(teacher_data))[-11]
 ### Data
 #### Initial Plots Describing Data
 
+
 ### Analysis
 #### Linear Regression Analysis
+
+```{r}
+# remove predictive columns TT2G46*, since they correlate highly with the average
+
+```
+
