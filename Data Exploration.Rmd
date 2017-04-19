@@ -253,5 +253,6 @@ This plot shows how responses to each individual question about satisfaction cor
 ```{r}
 # Write this subsetted, cleaned data set to a csv file
 write.csv(data, file="TALIS.csv", row.names=FALSE)
+write.csv(data_by_subject, file="subject_data.csv", row.names=FALSE)
 ```
 
