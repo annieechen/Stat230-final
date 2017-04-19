@@ -23,12 +23,13 @@ library(FNN)
 ### Changes to Dataset from Last time
 ```{r}
 #To start, let's read in the cleaned dataset from our last submission:
-teacher_data <- read.csv("TALIS.csv", as.is=TRUE)
+teacher_data <- read.csv("TALIS.csv")
 subject_data <- read.csv("subject_data.csv", as.is=TRUE)
 
 #change column names of 10 satisfaction questions to make more readable
 indices <- grep("TT2G46", colnames(teacher_data))[-11]
 colnames(teacher_data)[indices] <- c("sat1", "sat2", "sat3", "sat4", "sat5", "sat6", "sat7", "sat8", "sat9", "sat10")
+names(teacher_data)[names(teacher_data)=="TT2G46_avg"] <- "sat_avg"
 
 #Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
 teacher_data <- teacher_data[, -24]
@@ -41,18 +42,22 @@ names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
 names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 ```
 
-#### Change to Plot 3
+A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
 
-This plot is a cleaner version of what we were trying to show with our last plot (from when we turned in the dataset)
 ```{r}
-data_melted <- melt(teacher_data[,grep("TT2G46", colnames(teacher_data))], id.vars="TT2G46_avg")
-data_melted %>% ggplot(aes(x=variable, y=value)) + geom_boxplot() + labs(x="Individual Questions", y="Strongly Disagree to Strongly Agree", title="Average Response vs Individual Questions for Satisfaction")
-```
+teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
+teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
+teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 
+teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("No positive change", "A small change", "A moderate change", "A large change"), ordered=TRUE)
+
+teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"))
+```
 
 ### Main Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
 (2) How do teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
+
 ### Introduction
 
 ### Data
@@ -83,10 +88,29 @@ sum(na.omit(teacher_data$age_start) <= 15)
 teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=country)) + geom_point(alpha= 0.5, shape=".") + geom_smooth(method="lm", se=F)
 ```
 
-We can see that every
-
 ### Analysis
 #### Linear Regression Analysis
+```{r}
+sat_indices <- grep("sat", names(teacher_data))
+m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(13:23)])
+summary(m1)
+```
+
+#### One-way Anova Tests
+##### Does Feedback Influence Salary Increases?
+```{r}
+m2 <- lm(sat_avg ~ feedback_salary, data=teacher_data)
+anova(m2)
+boxplot(TT2G46_avg ~ country, data=teacher_data)
+teacher_data$subject_count <- rowSums(teacher_data[,24:35], na.rm=TRUE)
+```
+
+##### Total Time
+```{r}
+m3 <- lm(sat_avg ~ total_time, data=teacher_data)
+anova(m3)
+plot(teacher_data$sat_avg ~ teacher_data$total_time)
+abline(m3)
 
 Using stepwise regression
 ```{r}
