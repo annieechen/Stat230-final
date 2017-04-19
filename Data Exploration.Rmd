@@ -1,0 +1,168 @@
+---
+title: "STAT 230 - Final Project Proposal"
+author: "Veena Advani, Annie Chen, and Robert Tung"
+date: "4/10/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library("foreign")
+library("dplyr")
+library("tidyr")
+library("countrycode")
+library("rworldmap")
+library(ggplot2)
+library(reshape2)
+```
+##Introduction and Explanation of Variables
+
+####Dataset: 
+
+We will be analyzing the Teaching and Learning International Survey (TALIS) dataset, which comes from a survey of the teaching workforce that aims to collect information about teaching as a profession, the working conditions of teachers, and the learning environments of schools. We are using the largest dataset file available from TALIS, which is the survey data from lower secondary schools.  There was much less data available from surveying other school levels such as primary school and upper secondary school.  
+The dataset contains a column for each individual question on the questionnaire, and summary columns for overall sections. There are columns concerning employment status, personal information/background, time spent, professional development, efficacy and amount of feedback, outlook about the school, school climate, overall job satisfaction, and much more. Each row of the dataset is for a different teacher’s responses to the questionnaire.  Almost all of the questions in the questionnaire were multiple choice or numerical input questions.  
+
+####Dimensions of the Dataset:
+
+After selecting the columns we are interested in, our data set has 117,876 rows and 23 columns.
+
+####How We Manipulated the Dataset:
+
+The TALIS data set came in several .sav files.  We chose the file that corresponded to lower secondary school teachers, as that was the school level the survey focused on, and it was much larger than the data sets for primary school or upper secondary school.  When we used read.spss, we read the data into a data frame and set the option use.missings to TRUE.  This means that in the columns of the original data that had categories such as “Not administered”, “Not reached”, and “Omitted/Invalid”, these categorical values were converted to NA values.  We also renamed many of the columns to make the dataset easier to work with, since most of the names were sequences of letters like “TT2G01A”, and converted some of the factor variables to numeric, depending on how we planned to use those variables in the future.
+
+
+
+####Main Research Questions:
+
+We hope to explore how the questionnaire variables discussed above relate to overall teacher satisfaction (as indicated in variable TT2G46_avg).  For example, how does teacher satisfaction vary by country? By degree of training? By gender?  Does there appear to be a correlation between aspects such as school culture and teacher satisfaction? Or time spent on teaching and teacher satisfaction?  Given that this is an international dataset, we also hope to explore how some of these variables, such as teacher training level and teacher satisfaction, vary by country as well.
+
+###Responses to Feedback from Proposal:
+
+Questions:
+
+Did a random sample of educators receive a survey in the mail? Are the countries represented only English-speaking countries or do they also include non-English speaking countries? Of the variables you are studying, are all of them self-reported? 
+
+Answers:
+
+SCED* Level 2 schools were selected. At selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires. The countries include non-English speaking countries. The only requirement was that participating countries must be industrialized. All the variables we were studying were self reported. 
+
+### Reading in the Data
+```{r, warning=FALSE}
+# Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
+lower_second_data <- read.spss("BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
+
+cols <- c("CNTRY", "TT2G01", "TT2G02", "TT2G05B", "TT2G11", "TT2G13A", "TT2G13B", "TT2G13C", "TT2G16", "TT2G30G", "TT2G38", "TT2G44E", "TJOBSATS")
+
+# We are creating a dataset with the columns from our project proposal, the 10 questions related to job satisfaction, which are columns TT2G46A through TT2G46J, as well as a few additional columns which we also think might be useful
+data <- cbind(lower_second_data[,cols],lower_second_data[,grep("TT2G46", colnames(lower_second_data))], lower_second_data[,grep("TT2G15", colnames(lower_second_data))])
+```
+
+
+###Data Cleaning
+```{r}
+# Rename some of the columns so that they're easier to work with
+data <- data %>% rename(gender=TT2G01, age=TT2G02, country=CNTRY, years_teacher = TT2G05B, train_stat = TT2G11, prep_A=TT2G13A, prep_B=TT2G13B, prep_C=TT2G13C, total_time=TT2G16, feedback_salary=TT2G30G, collab=TT2G44E, num_students=TT2G38, satisfaction=TJOBSATS)
+
+# Columns that start with TT2G15 correspond to several questions asking what subjects teachers teach:
+#Let's manipulate the subject data so that it's in a form that's useful to us
+
+# First make an ID column to merge back after isolating the subject as one column
+data$ID <- seq.int(nrow(data))
+
+# Indices of columns dealing with subject taught
+indices <- grep("TT2G15", colnames(data))[-1] #-1 to deal with the TT2G15 column that isn't for a specific subject
+
+# Convert "Yes" "No" levels to 0 for didn't teach subject and 1 for taught subject
+for (i in indices) {
+  data[,i] <- 2 - as.numeric(data[,i])
+}
+
+# Rename columns by subject
+data <- data %>% rename(R_WR_Lit=TT2G15A, Math=TT2G15B, Science=TT2G15C, Soc_Studies = TT2G15D, For_Lang = TT2G15E, Gk_Ln=TT2G15F, Tech=TT2G15G, Arts=TT2G15H, PE=TT2G15I, Rel_Ethics=TT2G15J, Practical=TT2G15K, Other=TT2G15L)
+
+# Names of columns 
+col_names <- colnames(data)[indices]
+```
+
+```{r}
+# Below is just the R code for extracting the subject column
+# This is separated for clarity since it is extensive in and of itself
+
+df <- data[25:37]
+
+# Melt to format -- similar to "gather"
+temp_by_subj <- melt(df,id="ID")
+
+# Only keep 1's (subjects taught)
+temp_by_subj <- temp_by_subj[which(temp_by_subj$value==1),]
+
+# Merge the subject table in with data
+data_by_subject <- merge(data,temp_by_subj,all.y=T, by = "ID")
+
+# Clean up unnecessary columns
+data_by_subject <- data_by_subject[,-(c(15:24,26:37,39))]
+data_by_subject <- data_by_subject %>% rename(Subject=variable)
+```
+
+```{r}
+#Below is the code used to clean up the satisfaction related questions, as well as a few other columns
+
+# All ten columns with responses related to job satisfaction are factors, with 4 levels: "Strongly Disagree", "Disagree", "Agree", "Strongly Agree".
+# We are going to convert these 10 columns to numerical data, where the factors get converted to the integers 1, 2, 3, and 4, with 1 corresponding to Strongly Disagree and 4 corresponding to Strongly Agree.
+for (i in grep("TT2G46", colnames(data))) {
+  data[,i] <- as.numeric(data[,i])
+}
+
+# Questions C, D, and F were negatively phrased questions, so we are reversing their scales so we can compare them to the positively phrased questions.
+data$TT2G46C <- 5 - data$TT2G46C
+data$TT2G46D <- 5 - data$TT2G46D
+data$TT2G46F <- 5 - data$TT2G46F
+
+# Questions TT2G46A through J were all related to teacher satisfaction.  Consequently, we are going to create a column that averages the results of these 10 questions to get a sense of teacher satisfaction
+data$TT2G46_avg <- rowMeans(data[,grep("TT2G46", colnames(data))], na.rm=TRUE)
+
+# Clean up country column, which has a lot of whitespace
+data$country <- as.factor(trimws(as.character(data$country)))
+
+# Clean up train_stat variable so it's easier to work with
+# Make No the first factor, so that if we convert it to numeric, it's easy to have 0 represent No and 1 represent Yes
+data$train_stat <- relevel(data$train_stat, "No")
+```
+
+###Three Plots to Discuss
+```{r, message=FALSE, warning=FALSE}
+#Plot 1
+country_avg <- data %>% group_by(country) %>% summarize(mean_satisfaction = mean(TT2G46_avg, na.rm=TRUE))
+
+#code for map with average teacher satisfaction by country
+sPDF <- joinCountryData2Map(country_avg, joinCode = "ISO3", nameJoinColumn = "country")
+mapCountryData(sPDF, nameColumnToPlot = "mean_satisfaction")
+```
+
+The above plot shows average level of satisfaction plotted across all countries that participated in the study. We computed average level of satisfaction by averaging the teachers' responses across 10 questions related to job satisfaction.  The responses for each of these 10 questions were on a scale of 1 to 4, with 1 being least satisfied, and 4 being most satisfied, with various aspects of their jobs. It is interesting to note the variation between countries. Although all means were within a point of each other, there is a noticeable discrepancy between certain countries. In particular, it does seem interesting that there is a lot of variation across neighboring European countries (particularly in Scandinavia), whereas level of satisfaction is rather high in the US and Australia.  It is also interesting that the US is on the higher end of teacher satisfaction given the fact that people often praise education systems in many European countries such as Italy and Finland, as being better than the US education system.
+
+```{r}
+#Plot 2
+plot(years_teacher ~ Subject, data = data_by_subject, las = 2, main = "Years of Teaching Experience by Subject", ylab="Years of Experience Teaching", xlab="")
+plot(total_time ~ Subject, data = data_by_subject, las = 2, main = "Time Spent on Teaching Related Activities by Subject", ylab = "Total Time Spent per Week (in hours)", xlab="")
+```
+
+After creating the factor column with the subjects each teacher taught (allowing for multiple rows per teacher if that teacher taught more than 1 subject), the above plots show how “Total number of hours spent teaching, planning lessons, grading, collaborating with other teachers, participating in staff meetings, and on other job-related tasks” varies across subjects, as well as “How many years working as a teacher” varies across subjects. It is interesting that there seems to be little to no variation in these values. In particular, it is as expected that the median number of hours worked for any subject is 40, as this is the average amount of time in a work-week for any full-time employee. The quartiles for each of these variables vary more.
+
+```{r}
+#Plot 3
+data_melted <- melt(data[,grep("TT2G46", colnames(data))], id.vars="TT2G46_avg")
+ggplot(data_melted, aes(x=variable, y=value, color=TT2G46_avg)) + 
+  geom_point() + scale_color_gradient(low="red", high="green") + geom_jitter() + labs(x="Individual Questions", y="Strongly Disagree to Strongly Agree", title="Average Response vs Individual Questions for Satisfaction")
+```
+
+This plot shows how responses to each individual question about satisfaction correlate with an overall average of all the satisfaction columns. There are 10 individual questions, with responses from Strongly Disagree (1) to Strongly Agree (4). For questions that were negatively phrased, we flipped the response variables such that for every question, a response of 4 is positive towards satisfaction. We can see that some questions are better correlated with overall job satisfaction. For instance, J, “All in all, I am satisfied with my job,” has the most homogenous coloring within each rectangle, which makes sense, since it’s the most broad question. Question H, “I think that the teaching profession is valued in society”, is significantly green even for people who responded “Strongly Disagree,” suggesting that teachers could think their profession wasn’t valued in society but still be satisfied with their job. Questions D and I, “I regret that I decided to become a teacher” and “I am satisfied with my performance in this school” are red even for people who responded “Strongly Agree,” suggesting that teachers could not regret becoming a teacher, and/or be satisfied with their performance at their school, but still be dissatisfied with teaching overall.
+
+```{r}
+# Write this subsetted, cleaned data set to a csv file
+write.csv(data, file="TALIS.csv", row.names=FALSE)
+```
+
