@@ -19,7 +19,6 @@ library(ggplot2)
 library(reshape2)
 ```
 ##Introduction and Explanation of Variables
-
 ####Dataset: 
 
 We will be analyzing the Teaching and Learning International Survey (TALIS) dataset, which comes from a survey of the teaching workforce that aims to collect information about teaching as a profession, the working conditions of teachers, and the learning environments of schools. We are using the largest dataset file available from TALIS, which is the survey data from lower secondary schools.  There was much less data available from surveying other school levels such as primary school and upper secondary school.  
@@ -33,7 +32,97 @@ After selecting the columns we are interested in, our data set has 117,876 rows 
 
 The TALIS data set came in several .sav files.  We chose the file that corresponded to lower secondary school teachers, as that was the school level the survey focused on, and it was much larger than the data sets for primary school or upper secondary school.  When we used read.spss, we read the data into a data frame and set the option use.missings to TRUE.  This means that in the columns of the original data that had categories such as “Not administered”, “Not reached”, and “Omitted/Invalid”, these categorical values were converted to NA values.  We also renamed many of the columns to make the dataset easier to work with, since most of the names were sequences of letters like “TT2G01A”, and converted some of the factor variables to numeric, depending on how we planned to use those variables in the future.
 
+####Detailed Description of Variables
 
+The variable name in parentheses is the column name in the original dataset.  The name outside of the parentheses is the new name we renamed the column to in our data frame.
+
+* `country (CNTRY):` Country of teacher
+
+String with a 3-letter Country ID / Alpha code that corresponds to the country that the teacher works in. There are no missing values in this column, but there are 3925 entries with the country code “CSH” (the most of any country code). We could not find a country with this country code, nor any information about this in the user guide. 
+
+* `gender (TT2G01):` Teacher Gender
+
+This variable stores the teacher’s gender as a factor with 2 levels, “Female” and “Male”.  The original dataset also had categories for “Not reached”, “Not administered” and “Omitted/Invalid”, which we chose to convert to NA when we read in the data set. There are three NAs for this column. Our dataset is heavily skewed female, as 69% of respondents are female. 
+ 				
+* `age (TT2G02):` Teacher Age
+
+Numeric scale variable for the teacher’s age.  The original data set used 97, 98, and 99 to represent “Not reached”, “Not administered”, and “Omitted / Invalid” respectively.  We chose to convert these three values to NA when we read in the dataset. There are 139 NAs for this column. 
+
+* `years_teacher (TT2G05B):` Years of teaching experience
+
+Numeric scale variable that contains the total number of years the teacher has been teaching.  The original dataset used the values of 97, 98 and 99 to represent “Not reached”, “Not administered”, and “Omitted or Invalid” respectively.  We chose to convert these three values to NA when we read in the dataset. 6% of the observations  in this column are NA. 
+
+* `train_stat (TT2G11):` Training level of teacher
+
+This data contains teacher responses to a question that asks them whether or not they completed a teacher training program.  In the original dataset, this is stored as a numeric nominal variable representing Yes (1), No (2), Not reached (7), Not administered (8), or Omitted / Invalid (9).  In our data frame, we have stored this variable as a factor with two levels, “No” and “Yes”, and chose to convert the other three categories to NA. 1.6% of the observations  in this column are NA.
+
+* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt
+
+prep_A (TT2G13A): This variable stores teacher responses to a question that asks whether teachers feel prepared for the “content of the subjects that I teach”.  This column has very few NA values, with only 2.16% of the observations having an NA value for this column.
+
+prep_B (TT2G13B): This variable stores responses to a question that asks teachers whether they feel prepared for the “pedagogy of the subjects I teach”.  Only 3.13% of the observations have an NA value for this column.
+
+prep_C (TT2G13C): This variable stores responses to a question that asks teachers whether they feel prepared for the “classroom practice in the subjects that I teach”.  Only 2.67% of the observations have an NA value for this column.
+
+Each of these columns is a numeric ordinal variable with options Not at all (1), Somewhat (2), Well (3), Very Well (4), Not reached (7), Not administered (8), or Omitted / Invalid (9).  In our data frame, these variables are stored as factors with 4 levels.  We chose to convert the last three categories to NA when we read in the data.  
+	
+* `total_time (TT2G16):` Total time spent on teaching related activities (in hours) per week
+
+Numeric scale variable representing how many hours were spent on teaching and other tasks related to the job in a week.  This variable ranges from 0 to 120.  This column has 3282 NA values, which is roughly 2.78% of the total number of observations.  The entries in this column with total_time values greater than or equal to 90 are also a little suspicious, as that means that on average the teacher is spending at least 18 hours a day, 5 days a week, on teaching related activities, which does not seem that realistic.  There are 795 entries with a total_time value that is greater than or equal to 90 hours a week.
+
+* `feedback_salary (TT2G30G):` Whether performance feedback influences salary
+
+In the original dataset, this column contained a numeric ordinal variable representing whether feedback for the teacher led to a positive change in their salary.  The different values were “No positive change” (1), “A small change” (2), “A moderate change” (3), “A large change” (4), “Logically not applicable” (6), “Not reached” (7), “Not administered” (8), or “Omitted / Invalid” (9).  In our data frame, this variable is stored as a factor with the first 4 categories as levels.  The categories 6-9 were converted to NA values in our data frame.  This column also has 22,066 NA values, which is roughly 18.7% of the total number of observations.  Since this is quite a large percentage of the dataset, we might not end up using this column.
+
+* `collab (TT2G44E):` How collaborative is the school culture?
+
+This column is stored as a numeric ordinal variable representing whether “There is a collaborative school culture which is characterised by mutual support”.  The possible values are Strongly disagree (1), Disagree (2), Agree (3), Strongly Agree (4), Not reached (7), Not administered (8), or Omitted / Invalid (9).  In our data frame, this variable is stored as a factor with 4 levels, Strongly disagree, Disagree, Agree, Strongly agree.  The other three categories were converted to NA.  This column has 5045 NA values, which is only roughly 4.28% of the observations in the dataset.
+
+* `num_students (TT2G38):` Number of students in the teacher’s class
+
+Numeric scale variable representing the number of students in the teacher’s class, with 996, 997, 998, and 999 used to represent “Logically not applicable”, “Not reached”, “Not administered”, and “Omitted / Invalid respectively”.  In our data frame, the values 996, 997, 998 and 999 were converted to NA when we read in the data.  The numerical data in this column ranges from 1 to 99, which seems like a realistic range.  This column also has a lot of NA values, with roughly 18% of the observations having an NA value for the number of students in the class.
+
+* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (scale from 1 to 4)
+
+Numeric variable ranging from 4.25 to 15.23, with values resulting from confirmatory factor analysis, with standard deviation of 2 and scale midpoint of 10.  9997, 9998, and 9990 were used to represent “Default”, “Not applicable”, and “Not Stated”, respectively.  In our data frame, the values 9997, 9998 and 9990 were converted to NA values when we read in the data.
+
+* `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches
+
+Originally a factor variable with possible answers “Yes” and “No”, we then change these to binary numeric variables (0 for No, 1 for Yes).
+
+* `(TT2G46[A - J]):` Ten questions related to teacher job satisfaction
+
+These 10 columns contain the teacher responses for 10 questions relating to teacher job satisfaction, with categorical responses “Strongly disagree,” “Disagree,” “Agree,” “Strongly Disagree,” which we coerced to a numeric from 1 to 4, respectively.  For the negatively phrased questions, we converted it to five minus the coerced numeric value so that for all 10 questions, 4 corresponds to the most positive response and 1 corresponds to the most negative response.  All 10 of these columns had similar quantities of NA values, which ranged from roughly 3.83% of the observations to roughly 4.23% of the observations.  Additionally, most of the time when an observation contains an NA in one of these 10 questions, it also contains an NA for the other 9 questions.
+
+The questions were:
+
+A) The advantages of being a teacher clearly outweigh the disadvantages. 
+
+B) If I could decide again, I would still choose to work as a teacher
+
+C) I would like to change to another school of that were possible
+
+D) I regret that I decided to become a teacher
+
+E) I enjoy working at this school
+
+F) I wonder whether it would have been better to choose another profession
+
+G) I would recommend my school as a good place to work
+
+H) I think that the teaching profession is valued in society
+
+I) I am satisfied with my performance in this school
+
+J) All in all, I am satisfied with my job.
+
+####Variables we added:
+
+* `TT2G46_avg`
+
+The average of columns TT2G46[A - J], which we use as a measure for overall job satisfaction. We chose to use the average rather than the provided TJOBSATS column, because we didn’t fully understand how the TJOBSATS column was calculated. This column and the TJOBSATS column had a correlation of .963,  so we felt comfortable using a more easily interpreted column.
+
+* `Subject` -- Second data frame: We made a dataframe called data_by_subject with all of the information in data, but for which there is 1 row for every (teacher, subject) pair (note that this is more than the number of teachers since one teacher may teach multiple subjects). We created an ID column as well to distinguish teachers in this dataframe. In this dataframe, Subject is a factor column with the levels being the subjects taught. In this way, we can create plots where the x-axis is the subject taught.
 
 ####Main Research Questions:
 
@@ -52,7 +141,7 @@ SCED* Level 2 schools were selected. At selected schools, the principal (or head
 ### Reading in the Data
 ```{r, warning=FALSE}
 # Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
-lower_second_data <- read.spss("BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
+lower_second_data <- read.spss("SPSS_International/BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
 
 cols <- c("CNTRY", "TT2G01", "TT2G02", "TT2G05B", "TT2G11", "TT2G13A", "TT2G13B", "TT2G13C", "TT2G16", "TT2G30G", "TT2G38", "TT2G44E", "TJOBSATS")
 
