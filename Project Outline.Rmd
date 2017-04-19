@@ -17,6 +17,7 @@ library("countrycode")
 library("rworldmap")
 library(ggplot2)
 library(reshape2)
+library(FNN)
 ```
 
 ### Changes to Dataset from Last time
@@ -29,7 +30,7 @@ subject_data <- read.csv("subject_data.csv", as.is=TRUE)
 indices <- grep("TT2G46", colnames(teacher_data))[-11]
 colnames(teacher_data)[indices] <- c("sat1", "sat2", "sat3", "sat4", "sat5", "sat6", "sat7", "sat8", "sat9", "sat10")
 
-#Column "TT2G15" contains no useful data, so we're going to remove it
+#Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
 teacher_data <- teacher_data[, -24]
 
 #Column "ID" is no longer necessary, was used for making the subject dataset
@@ -61,8 +62,22 @@ data_melted %>% ggplot(aes(x=variable, y=value)) + geom_boxplot() + labs(x="Indi
 ### Analysis
 #### Linear Regression Analysis
 
+Using stepwise regression
 ```{r}
-# remove predictive columns TT2G46*, since they correlate highly with the average
-
+# remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
+x <- na.omit(teacher_data[, -grep("sat", colnames(teacher_data))])
+m.full <- lm(TT2G46_avg ~., data=x)
+m.empty <- lm(TT2G46_avg ~ 1, data=x)
 ```
+Forward, backwards, and both
+```{r}
+m.forward <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="forward", trace=FALSE)
+m.backward <- step(m.full, scope=list(lower=m.empty),
+                  data=x, direction="backward", trace=FALSE)
+m.both <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="both", trace=FALSE)
+```
+
+
 
