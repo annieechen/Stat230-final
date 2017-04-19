@@ -14,11 +14,20 @@ knitr::opts_chunk$set(echo = TRUE)
 #To start, let's read in the cleaned dataset from our last submission:
 teacher_data <- read.csv("TALIS.csv", as.is=TRUE)
 subject_data <- read.csv("subject_data.csv", as.is=TRUE)
-grep("TT2G46", colnames(teacher_data))[-11]
+
 #change column names of 10 satisfaction questions to make more readable
+indices <- grep("TT2G46", colnames(teacher_data))[-11]
+colnames(teacher_data)[indices] <- c("sat1", "sat2", "sat3", "sat4", "sat5", "sat6", "sat7", "sat8", "sat9", "sat10")
+
+#Column "TT2G15" contains no useful data, so we're going to remove it
+teacher_data <- teacher_data[, -24]
+
+#Column "ID" is no longer necessary, was used for making the subject dataset
+teacher_data <- teacher_data[, -36]
 
 #change some of the subject names (one of the comments in our dataset submission was that they weren't clear):
-
+names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
+names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 ```
 
 ### Main Questions:
