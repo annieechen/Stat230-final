@@ -57,14 +57,14 @@ teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree",
 ### Introduction
 Introduction - No more than 1 page. Briefy describe the dataset you are studying and the research question you aim to answer. Provide ample motivation to convince your audience of the relevance of your research question.
 
-####Dataset
-Teaching and Learning International Survey (TALIS) Dataset.
-* aimed to collect information on teaching profession, working conditions, and learning environments of schools
-* one goal was to come up with metrics and information that would enable comparisons across countries
-* focused on lower secondary schools
-* one column for each question on questionairre, as well as some summary columns for sections of the survey
-* one row for each teacher response
-* 36 countries in the dataset
+This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset.
+Some information about TALIS:
+* It aimed to collect information on teaching profession, working conditions, and learning environments of schools
+* One goal was to come up with metrics and information that would enable comparisons across countries
+* It focused on lower secondary schools
+* There are 36 countries in the dataset
+
+SCED* Level 2 schools were selected. At selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires. The countries include non-English speaking countries. The only requirement was that participating countries must be industrialized. All the variables we were studying were self reported. 
 
 #### Main Research Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
@@ -109,14 +109,17 @@ teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=country)) + geom_point
 #### Linear Regression Analysis
 ```{r}
 sat_indices <- grep("sat", names(teacher_data))[-12]
-m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(13:23)])
+#some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
+na_indices <- c(10,11)
+subject_indices <- c(24:35)
+m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_indices, sat_indices, subject_indices)])
 summary(m1)
 ```
 
 Using stepwise regression
 ```{r}
 # remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
-x <- na.omit(teacher_data[, -(sat_indices)])
+x <- na.omit(teacher_data[, -c(sat_indices, na_indices, subject_indices)])
 m.full <- lm(sat_avg ~., data=x)
 m.empty <- lm(sat_avg ~ 1, data=x)
 ```
