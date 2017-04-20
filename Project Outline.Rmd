@@ -22,7 +22,7 @@ library(FNN)
 
 ### Changes to Dataset from Last time
 ```{r}
-#To start, let's read in the cleaned dataset from our last submission:
+#To start, let's read in the cleaned datasets from our last submission:
 teacher_data <- read.csv("TALIS.csv")
 subject_data <- read.csv("subject_data.csv", as.is=TRUE)
 
@@ -51,18 +51,35 @@ teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somew
 
 teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("No positive change", "A small change", "A moderate change", "A large change"), ordered=TRUE)
 
-teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"))
+teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"), ordered=TRUE)
 ```
 
-### Main Questions:
+### Introduction
+Introduction - No more than 1 page. Briefy describe the dataset you are studying and the research question you aim to answer. Provide ample motivation to convince your audience of the relevance of your research question.
+
+####Dataset
+Teaching and Learning International Survey (TALIS) Dataset.
+* aimed to collect information on teaching profession, working conditions, and learning environments of schools
+* one goal was to come up with metrics and information that would enable comparisons across countries
+* focused on lower secondary schools
+* one column for each question on questionairre, as well as some summary columns for sections of the survey
+* one row for each teacher response
+* 36 countries in the dataset
+
+#### Main Research Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
 (2) How do teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
 
-### Introduction
+#### Motivation of Study:
+* Education is important to any country's basic development and functioning
+* There is a fair amount of diversity across countries with regard to how well the teaching profession is respected.
+* As a result, teacher working conditions vary quite a bit
+* However, in order to make sure that there are enough teachers, and that they are able to teach their students well, it is important that teacher satisfaction is at a high enough level.  If teacher satisfaction is low, they are less likely to enjoy their jobs and put a lot of energy into their teaching, and there is a higher chance that they will leave their jobs and that less people will enter the teaching profession.
+* Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction, could be helpful information in order to make sure that countries have enough teachers, and that teachers are able to do their jobs well.
 
 ### Data
 #### Initial Plots Describing Data
-
+##### Plot 1: Teacher Age vs Years of Teaching Experience
 First, we look at a plot of age vs years teacher.
 ```{r}
 teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=gender)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1) +  geom_jitter(alpha=0.5,shape=".")
@@ -91,33 +108,17 @@ teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=country)) + geom_point
 ### Analysis
 #### Linear Regression Analysis
 ```{r}
-sat_indices <- grep("sat", names(teacher_data))
+sat_indices <- grep("sat", names(teacher_data))[-12]
 m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(13:23)])
 summary(m1)
 ```
 
-#### One-way Anova Tests
-##### Does Feedback Influence Salary Increases?
-```{r}
-m2 <- lm(sat_avg ~ feedback_salary, data=teacher_data)
-anova(m2)
-boxplot(TT2G46_avg ~ country, data=teacher_data)
-teacher_data$subject_count <- rowSums(teacher_data[,24:35], na.rm=TRUE)
-```
-
-##### Total Time
-```{r}
-m3 <- lm(sat_avg ~ total_time, data=teacher_data)
-anova(m3)
-plot(teacher_data$sat_avg ~ teacher_data$total_time)
-abline(m3)
-
 Using stepwise regression
 ```{r}
 # remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
-x <- na.omit(teacher_data[, -grep("sat", colnames(teacher_data))])
-m.full <- lm(TT2G46_avg ~., data=x)
-m.empty <- lm(TT2G46_avg ~ 1, data=x)
+x <- na.omit(teacher_data[, -(sat_indices)])
+m.full <- lm(sat_avg ~., data=x)
+m.empty <- lm(sat_avg ~ 1, data=x)
 ```
 Forward, backwards, and both
 ```{r}
@@ -129,5 +130,22 @@ m.both <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="both", trace=FALSE)
 ```
 
+
+#### One-way Anova Tests
+##### Does Feedback Influence Salary Increases?
+```{r}
+m2 <- lm(sat_avg ~ feedback_salary, data=teacher_data)
+anova(m2)
+boxplot(sat_avg ~ country, data=teacher_data)
+teacher_data$subject_count <- rowSums(teacher_data[,24:35], na.rm=TRUE)
+```
+
+##### Total Time
+```{r}
+m3 <- lm(sat_avg ~ total_time, data=teacher_data)
+anova(m3)
+plot(teacher_data$sat_avg ~ teacher_data$total_time)
+abline(m3)
+```
 
 
