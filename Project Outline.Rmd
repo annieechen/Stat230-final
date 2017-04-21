@@ -180,13 +180,13 @@ In addition to using linear regression, we will also then convert our job satisf
 
 For Logistic Regression we will:
 (1) Try a full model, with all the predictors
-(2) Try forwards, backwards and bidirectional stepwise selection
+(2) Try forward, backward and bidirectional stepwise selection
 
-Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied, and compare these results to the results we got from linear regression.
+Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied, and to compare these results to the results we got from linear regression.
 
 ### Analysis for Research Question 2
 
-To address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom related variables, we are going to try several techniques.
+To address our second research question, and to try to identify the differences across different regions for teacher job satisfaction and other classroom related variables, we are going to try several techniques.
 
 (1) We are first going to examine a boxplot of sat_avg vs region, using the region variable as a factor (see plot 3 above). This will visually tell us whether there might be a significant difference in satisfaction across regions.
 (2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in avg_sat by region could be due to other variables that are correlated with region.
