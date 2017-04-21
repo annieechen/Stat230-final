@@ -111,7 +111,7 @@ Some information about TALIS:
 
 ### Data
 
-Each row of the dataset is for a single teacher's response to the questionairre.  Each column in the dataset corresponds to either a particular question in the questionairre, or a summary variable for a section of the questionairre.
+Each row of the dataset is for a single teacher's response to the questionnaire.  Each column in the dataset corresponds to either a particular question in the questionnaire, or a summary variable for a section of the questionnaire.
 
 The variables we are using are:
 
@@ -137,30 +137,7 @@ The variables we are using are:
 Below are three plots that show our data and hopefully motivate our research questions and the analysis.
 
 ##### Plot 1: Teacher Age vs Years of Teaching Experience
-First, we look at a plot of age vs years teacher.
-```{r}
-teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=gender)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1) +  geom_jitter(alpha=0.5,shape=".")
-```
 
-Right away, we can see that there are a number of outliers who appear to have been teaching longer than they've been alive. These are the points above the black line, which represents y=x.
-
-```{r}
-teacher_data$age_start <- teacher_data$age - teacher_data$years_teacher
-sum(na.omit(teacher_data$age_start) <= 0)
-```
-
-Although it doesn't really make sense for people to have started working as a teacher at age 5 either. Let's take a look at how many respondents said they started teaching before age 15 and 21. 
-```{r}
-teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=gender)) + geom_point(alpha= 0.5, shape=".") + geom_abline(intercept = -15, slope=1) + geom_abline(intercept = -21, slope=1) 
-```
-
-```{r}
-sum(na.omit(teacher_data$age_start) <= 15)
-```
-
-```{r}
-teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=country)) + geom_point(alpha= 0.5, shape=".") + geom_smooth(method="lm", se=F)
-```
 
 ##### Plot 2: Teacher Satisfaction vs Collaboration Level of the School
 ```{r}
