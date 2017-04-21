@@ -129,7 +129,7 @@ The variables we are using are:
 * `collab (TT2G44E):` How collaborative is the school culture? (factor variable, 4 levels)
 * `num_students (TT2G38):` Number of students in the teacher’s class (numeric variable)
 * `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (factor variable, 4 levels)
-* `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches (boolean numeric variable)
+* `Various Subject Names (TT2G15[A - L]):` 12 columns representing the subjects teachers teach (boolean numeric variable)
 * `num_subjects:` The number of subjects the teacher teaches (numeric variable)
 * `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (factor variables, 4 levels)
 * `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable)
@@ -137,16 +137,21 @@ The variables we are using are:
 #### Initial Plots Describing Data
 
 Below are three plots that show our data and hopefully motivate our research questions and the analysis.
-```{r, warning=FALSE}
+```{r, warning=FALSE, echo=FALSE}
 # Histogram of teacher satisfaction
 p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction", y="Count")
 
 # Boxplot of whether they consider their school a collaborative environment to satisfaction
-p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() + xlab("Collaboration") + ylab("Teacher Satisfaction")
+p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() +
+  labs(title="Relationship Between Collaboration Level
+       and Teacher Satisfaction",
+       x="Collaboration Level of the School",
+       y="Teacher Satisfaction")
 
 # Boxplot of region to satisfaction
-p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + xlab("Region") + ylab("Teacher Satisfaction")
+p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + labs(title="Teacher Satisfaction by Region", x="Region", y="Teacher Satisfaction")
 ```
+
 ```{r, echo=FALSE, fig.height=2, fig.width=10, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
 ```
@@ -183,8 +188,6 @@ collab, prep_C, and region
 
 #### Logistic Regression Analysis
 
-Logistic Regression:
-
 In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields slightly different results than our Linear Regression approach.
 
 For Logistic Regression we will:
@@ -203,9 +206,7 @@ To address our second research question, and try to identify the differences acr
 
 #### One-way ANOVA Test
 
-After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant differences in mean `sat_avg` across regions.
-
-We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
+After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant differences in mean `sat_avg` across regions. We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
 
 #### Linear Model
 
