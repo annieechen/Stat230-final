@@ -191,6 +191,32 @@ For Logistic Regression we will:
 
 Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied, and compare these results to the results we got from linear regression.
 
+```{r}
+teacher_data$isSatisfied <- teacher_data$sat_avg > 2.5
+# remove NA rows, since they don't contain meaningful information for us.
+teacher_data <- teacher_data[!is.na(teacher_data$sat_avg),]
+# remove SAT questions, since they obviously explain our predictor variable
+sat_indices <- grep("sat", names(teacher_data))[-12]
+subject_indices <- c(24:35)
+teacher_data <- teacher_data[, -c(sat_indices, subject_indices)]
+# don't use country
+teacher_data <- teacher_data[,-1]
+# split into train and test
+set.seed(365)
+train_indices <- sample(nrow(teacher_data), .8 * nrow(teacher_data))
+train <- teacher_data[train_indices,]
+test <- teacher_data[-train_indices,]
+
+m1 <- glm(isSatisfied ~., data=train)
+p1.preds <- ifelse(predict(m1, newdata=test, type="response") > 0.5,1,0)
+mean(p1.preds != test$isSatisfied, na.rm = TRUE)
+# see what our misclassification rate would be if we asigned randomly
+fake <- sample(test$isSatisfied, length(test$isSatisfied), replace=TRUE)
+mean(fake != test$isSatisfied, na.rm = TRUE)
+
+```
+
+
 ### Analysis for Research Question 2
 
 To address our second research question, and try to identify the differences across different regions for teacher job satisfaction, we are going to try several techniques.
