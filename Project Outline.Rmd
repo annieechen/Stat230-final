@@ -43,6 +43,9 @@ names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 
 #We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
 teacher_data$num_subjects <- rowSums(teacher_data[,24:35], na.rm=TRUE)
+
+#We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
+teacher_data <- teacher_data[, -13]
 ```
 
 A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
@@ -58,7 +61,6 @@ teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree",
 ```
 
 ### Introduction
-Introduction - No more than 1 page. Briefy describe the dataset you are studying and the research question you aim to answer. Provide ample motivation to convince your audience of the relevance of your research question.
 
 This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset.
 Some information about TALIS:
@@ -103,6 +105,9 @@ The variables we are using are:
 * `avg_sat:` An average of the ten questions related to teacher job satisfaction (numeric variable)
 
 #### Initial Plots Describing Data
+
+Below are three plots that show our data and hopefully motivate our research questions and the analysis.
+
 ##### Plot 1: Teacher Age vs Years of Teaching Experience
 First, we look at a plot of age vs years teacher.
 ```{r}
@@ -130,13 +135,20 @@ teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=country)) + geom_point
 ```
 
 ### Analysis
+
+To address our first research question, and try to identify which variables are the best indicators of teacher job satisfaction, we are going to try several techniques.
+
 #### Linear Regression Analysis
+(1) We are first going to run two linear regression models.  One with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
+(2) We are going to use forward, backwards and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
+(3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  Based on this, we will perform one-way ANOVA tests with each of these predictors, and graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.
+
 ```{r}
 sat_indices <- grep("sat", names(teacher_data))[-12]
 #some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
-na_indices <- c(10,11)
+na_cols <- c(10,11)
 subject_indices <- c(24:35)
-m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_indices, sat_indices, subject_indices)])
+m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_cols, sat_indices, subject_indices)])
 summary(m1)
 ```
 
@@ -159,20 +171,10 @@ m.both <- step(m.empty, scope=list(upper=m.full),
 
 
 #### One-way Anova Tests
-##### Does Feedback Influence Salary Increases?
-```{r}
-m2 <- lm(sat_avg ~ feedback_salary, data=teacher_data)
-anova(m2)
-boxplot(sat_avg ~ country, data=teacher_data)
-teacher_data$subject_count <- rowSums(teacher_data[,24:35], na.rm=TRUE)
-```
+TODO
 
-##### Total Time
-```{r}
-m3 <- lm(sat_avg ~ total_time, data=teacher_data)
-anova(m3)
-plot(teacher_data$sat_avg ~ teacher_data$total_time)
-abline(m3)
-```
+#### Logistic Regression Analysis
 
+Logistic Regression:
 
+In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields slightly different results than our Linear Regression approach.
