@@ -196,7 +196,3 @@ To address our second research question, and try to identify the differences acr
 #### One-way ANOVA Test
 
 After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant differences in mean `sat_avg` across regions. We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
-
-#### Linear Model
-
-Finally, we will make two linear models. The first linear model will try to predict sat_avg using only the region variable.  The second linear model will try to predict sat_avg using the region variable and all of the variables that seemed correlated with region in the analysis above.  We will then compare these two models to the best model found in part (1), in order to see if region or variables correlated with region heavily contributed to the success of the model in part 1, or if other predictors were more important.
