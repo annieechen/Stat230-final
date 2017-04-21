@@ -1,0 +1,24 @@
+First, we look at a plot of age vs years teacher.
+```{r}
+teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=gender)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1) +  geom_jitter(alpha=0.5,shape=".")
+```
+
+Right away, we can see that there are a number of outliers who appear to have been teaching longer than they've been alive. These are the points above the black line, which represents y=x.
+
+```{r}
+teacher_data$age_start <- teacher_data$age - teacher_data$years_teacher
+sum(na.omit(teacher_data$age_start) <= 0)
+```
+
+Although it doesn't really make sense for people to have started working as a teacher at age 5 either. Let's take a look at how many respondents said they started teaching before age 15 and 21. 
+```{r}
+teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=gender)) + geom_point(alpha= 0.5, shape=".") + geom_abline(intercept = -15, slope=1) + geom_abline(intercept = -21, slope=1) 
+```
+
+```{r}
+sum(na.omit(teacher_data$age_start) <= 15)
+```
+
+```{r}
+teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=country)) + geom_point(alpha= 0.5, shape=".") + geom_smooth(method="lm", se=F)
+```
