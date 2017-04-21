@@ -89,7 +89,6 @@ teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_a
 
 ### Introduction
 
-
 This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset.
 Some information about TALIS:
 
