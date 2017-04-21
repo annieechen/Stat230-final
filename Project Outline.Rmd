@@ -61,19 +61,31 @@ teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree",
 
 #We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
 
+
 # Brazil, Chile
 teacher_data$region[teacher_data$country %in% c("BRA", "CHL")] <- "South America"
 # Canada, Mexico, United States
 teacher_data$region[teacher_data$country %in% c("CAB", "MEX", "USA")] <- "North America"
-# Belgium, Bulgaria, Czech Republic, Denmark, England, Spain, Estonia, Finland, France, Georgia, Croatia, Israel, Italy, Latvia, Netherlands, Norway, Poland, Portugal, Romania, Russia, Serbia, Slovak Republic, Sweden
+#  Bulgaria, Czech Republic,  Poland,  Romania, Russia, Slovak Republic
 teacher_data$region[teacher_data$country %in% 
-                        c("BFL", "BGR", "CZE", "DNK", "ENG", "ESP", "EST", "FIN", "FRA", "GEO", "HRV", "ISR", "ITA", "LVA", "NLD", "NOR", "POL", "PRT", "ROU", "RUS", "SRB", "SVK", "SWE")] <- "European"
-# Abu Dhabi,                     
-teacher_data$region[teacher_data$country %in% c("AAD")] <- "Eastern Mediterranean"
+                        c("BGR", "CZE", "POL", "ROU", "RUS", "SVK")] <- "Eastern Europe"
+# Denmark, England, Estonia, Finland,   Latvia,  Norway, Sweden
+teacher_data$region[teacher_data$country %in% 
+                        c("DNK", "ENG",  "EST", "FIN", "LVA", "NOR", "SWE")] <- "Northern Europe"
+
+# Spain, Croatia, Italy, Latvia,  Portugal,  Serbia, 
+teacher_data$region[teacher_data$country %in% 
+                        c("ESP", "HRV", "ITA", "LVA", "PRT", "SRB")] <- "Southern Europe"
+
+
+# Belgium,  France, Netherlands
+teacher_data$region[teacher_data$country %in% 
+                        c("BFL", "FRA","NLD")] <- "Western Europe"
+# Abu Dhabi, Georgia, Israel                     
+teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "Eastern Mediterranean"
 # Australia, China, Japan, South Korea, Malaysia, New Zealand, Singapore
 teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
 teacher_data$region <- as.factor(teacher_data$region)
-summary(teacher_data$region)
 ```
 ### Introduction
 
@@ -128,17 +140,18 @@ p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) +
 p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot()
 p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot()
 ```
-```{r, echo=FALSE, fig.height=2.7, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, fig.height=2, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
 ```
-```{r, echo=FALSE, fig.height=2.7}
+```{r, echo=FALSE, fig.height=2.5}
 p3
 ```
 
 ##### Plot 1: Histogram of Teacher Satisfaction
 ##### Plot 2: Teacher Satisfaction vs Collaboration Level of the School
 ##### Plot 3: Teacher Region vs Teacher Satisfaction
-We can take a look at average satisfaction by region.
+
+TODO: Write up smart things for here.
 
 ### Analysis for Research Question 1
 
@@ -173,8 +186,7 @@ Then we will analyze the models from (1) and (2) to try to determine which colum
 
 ### Appendix
 
-
-### Changes to Dataset from Last time
+We've added our data cleaning code, with some slight changes from our last submission.
 ```{r, eval=FALSE}
 #To start, let's read in the cleaned datasets from our last submission:
 teacher_data <- read.csv("TALIS.csv")
@@ -223,11 +235,23 @@ summary(teacher_data$country)
 teacher_data$region[teacher_data$country %in% c("BRA", "CHL")] <- "South America"
 # Canada, Mexico, United States
 teacher_data$region[teacher_data$country %in% c("CAB", "MEX", "USA")] <- "North America"
-# Belgium, Bulgaria, Czech Republic, Denmark, England, Spain, Estonia, Finland, France, Georgia, Croatia, Israel, Italy, Latvia, Netherlands, Norway, Poland, Portugal, Romania, Russia, Serbia, Slovak Republic, Sweden
+#  Bulgaria, Czech Republic,  Poland,  Romania, Russia, Slovak Republic
 teacher_data$region[teacher_data$country %in% 
-                        c("BFL", "BGR", "CZE", "DNK", "ENG", "ESP", "EST", "FIN", "FRA", "GEO", "HRV", "ISR", "ITA", "LVA", "NLD", "NOR", "POL", "PRT", "ROU", "RUS", "SRB", "SVK", "SWE")] <- "European"
-# Abu Dhabi,                     
-teacher_data$region[teacher_data$country %in% c("AAD")] <- "Eastern Mediterranean"
+                        c("BGR", "CZE", "POL", "ROU", "RUS", "SVK")] <- "Eastern Europe"
+# Denmark, England, Estonia, Finland,   Latvia,  Norway, Sweden
+teacher_data$region[teacher_data$country %in% 
+                        c("DNK", "ENG",  "EST", "FIN", "LVA", "NOR", "SWE")] <- "Northern Europe"
+
+# Spain, Croatia, Italy, Latvia,  Portugal,  Serbia, 
+teacher_data$region[teacher_data$country %in% 
+                        c("ESP", "HRV", "ITA", "LVA", "PRT", "SRB")] <- "Southern Europe"
+
+
+# Belgium,  France, Netherlands
+teacher_data$region[teacher_data$country %in% 
+                        c("BFL", "FRA","NLD")] <- "Western Europe"
+# Abu Dhabi, Georgia, Israel                     
+teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "Eastern Mediterranean"
 # Australia, China, Japan, South Korea, Malaysia, New Zealand, Singapore
 teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
 teacher_data$region <- as.factor(teacher_data$region)
