@@ -121,14 +121,14 @@ The variables we are using are:
 * `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
 * `train_stat (TT2G11):` Training level of teacher (factor variable)
 * `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (factor variable, 4 levels)
-* `total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
+* `total_time (TT2G16):` Hours per week spent on teaching related activities (numeric variable)
 * `feedback_salary (TT2G30G):` Whether performance feedback influences salary (factor variable, 4 levels)
 * `collab (TT2G44E):` How collaborative is the school culture? (factor variable, 4 levels)
 * `num_students (TT2G38):` Number of students in the teacher’s class (numeric variable)
 * `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (factor variable, 4 levels)
-* `Various Subject Names (TT2G15[A - L]):` 12 columns representing the subjects teachers teach (boolean numeric variable)
+* `(TT2G15[A - L]):` 12 columns representing the subjects teachers teach (boolean numeric variable)
 * `num_subjects:` The number of subjects the teacher teaches (numeric variable)
-* `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (factor variables, 4 levels)
+* `sat1-sat10 (TT2G46[A - J]):` 10 questions on teacher job satisfaction (factor variables, 4 levels)
 * `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable)
 
 #### Initial Plots Describing Data
@@ -136,17 +136,17 @@ The variables we are using are:
 Below are three plots that show our data and hopefully motivate our research questions and the analysis.
 ```{r, warning=FALSE, echo=FALSE}
 # Histogram of teacher satisfaction
-p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction", y="Count")
+p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Plot 1: Histogram of Teacher Satisfaction", x="Teacher Satisfaction", y="Count")
 
 # Boxplot of whether they consider their school a collaborative environment to satisfaction
 p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() +
-  labs(title="Relationship Between Collaboration Level
-       and Teacher Satisfaction",
+  labs(title="Plot 2: Relationship Between Collaboration Level
+       of the School and Teacher Satisfaction",
        x="Collaboration Level of the School",
        y="Teacher Satisfaction")
 
 # Boxplot of region to satisfaction
-p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + labs(title="Teacher Satisfaction by Region", x="Region", y="Teacher Satisfaction")
+p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + labs(title="Plot 3: Teacher Satisfaction by Region", x="Region", y="Teacher Satisfaction")
 ```
 
 ```{r, echo=FALSE, fig.height=2, fig.width=10, message=FALSE, warning=FALSE}
@@ -156,15 +156,11 @@ grid.arrange(p1, p2, ncol=2)
 p3
 ```
 
-##### Plot 1: Histogram of Teacher Satisfaction
-##### Plot 2: Teacher Satisfaction vs Collaboration Level of the School
-##### Plot 3: Teacher Region vs Teacher Satisfaction
+**Plot 1** provides a full histogram of teacher satisfaction. As we are later analyzing the effect of different variables on teacher satisfaction, and the variation between different regions, it is important to note the overall distribution of the data. 
 
-Plot 1 provides a full histogram of teacher satisfaction. As we are later analyzing the effect of different variables on teacher satisfaction, and the variation between different regions, it is important to note the overall distribution of the data. 
+**Plot 2** provides a box plot of collab vs sat_avg. This plot is an example of one we would find in regard to our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. In looking at this particular plot, we can actually see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question, as well as more rigorous analysis to be described below.
 
-Plot 2 provides a box plot of collab vs sat_avg. This plot is an example of one we would find in regard to our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. In looking at this particular plot, we can actually see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question, as well as more rigorous analysis to be described below.
-
-Plot 3 provides a box plot of geographic region vs sat_avg. Our second research question revolves around variations in sat_avg and other variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore additional plots like this one in our analysis below, with other variables and their relationship to region.
+**Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our second research question, which revolves around variations in sat_avg and other variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore additional plots like this one, but with other variables, in our analysis below.
 
 ### Analysis for Research Question 1
 
@@ -177,11 +173,7 @@ To address our first research question, and try to identify which variables are 
 
 #### One-way ANOVA Test
 
-After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant variances in mean `sat_avg` across the predictors. 
-
-Some potential candidates for predictors are: 
-
-collab, prep_C, and region
+After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant variances in mean `sat_avg` across the predictors. Based on results so far, some potential candidates for predictors are collab, prep_C, and region.
 
 #### Logistic Regression Analysis
 
