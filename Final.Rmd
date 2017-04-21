@@ -140,10 +140,10 @@ Below are three plots that show our data and hopefully motivate our research que
 p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction", y="Count")
 
 # Boxplot of whether they consider their school a collaborative environment to satisfaction
-p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot()
+p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() + xlab("Collaboration") + ylab("Teacher Satisfaction")
 
 # Boxplot of region to satisfaction
-p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot()
+p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + xlab("Region") + ylab("Teacher Satisfaction")
 ```
 ```{r, echo=FALSE, fig.height=2, fig.width=10, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
@@ -227,15 +227,44 @@ To address our second research question, and try to identify the differences acr
 (2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
 (3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
+```{r}
+## p3, used as an example plot earlier in this write-up, is a plot of sat_avg vs region
+p3
+
+# Template code for (2) -- TODO: switch collab with predictive factors after found:
+p4 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
+p4
+
+# Template code for regression of (3) TODO: switch collab with predictive factors after found:
+summary(lm(sat_avg ~ region*as.numeric(collab), data=teacher_data))
+
+# Plot code for (3) TODO: switch collab with predictive factors after found:
+teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(collab), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Collab") + ylab("Sat") + facet_wrap(~region)
+```
+
+(1) Indeed, at least visually, there seems to be some discrepancy in the level of teacher satisfaction across regions (e.g. the median and both quartiles of Teacher Satisfaction for North America are higher than those of Eastern Europe).
+
+(2) TODO
+(3) TODO
+
 #### One-way ANOVA Test
 
-After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant variances in mean `sat_avg` across regions.
+After the analysis above is completed, we'll run an ANOVA test to see if there are statistically significant variances in mean `sat_avg` across regions.
+
+```{r}
+msatreg <- lm(sat_avg ~ region, data=teacher_data)
+summary(msatreg)
+
+anova(msatreg)
+```
 
 We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
 
-#### Linear Model
-
-Finally, we will perform a linear model of sat_avg against region and all of the variables that region is predictive of, and see how this compares to the models found in part (1), when the best predictors were chosen regardless of region.
+```{r}
+# Template code for anova of predictor against region TODO: switch collab with predictive factors after found:
+mcollabreg <- lm(collab ~ region, data=teacher_data)
+anova(msatreg)
+```
 
 ### Appendix
 
