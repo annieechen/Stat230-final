@@ -1,7 +1,7 @@
 ---
 title: "Project Outline"
 author: "Veena Advani, Annie Chen, Robert Tung"
-date: "4/18/2017"
+date: "Due: 4/21/2017"
 output: html_document
 ---
 
@@ -96,16 +96,16 @@ This analysis will focus on the Teaching and Learning International Survey (TALI
 * aimed to collect information on teaching profession, working conditions, and learning environments of schools
 * a goal was to come up with metrics and information that would enable comparisons across countries
 * focused on SCED* Level 2 schools (lower secondary schools)
-* At selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires
+* at selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires
 * 36 countries in the dataset (some of which are non-English speaking countries). The only country requirement was that participating countries must be industrialized.
 
 #### Main Research Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
-(2) How do teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
+(2) How does teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
 
 #### Motivation of Study:
 
-Obviously, education is important to any country's basic development and functioning. Respect for teachers and funding for schools varies by country. As a result, teacher working conditions vary quite a bit. To ensure that there are enough teachers, and that they are able to teach their students well, we must keep teachers satisfied. Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction could be helpful information to make sure that countries have enough teachers, and that teachers have enough resources to do their jobs well.
+Obviously, education is important to any country's basic development and functioning. Respect for teachers and funding for schools vary by country. As a result, teacher working conditions differs quite a bit. To ensure that there are enough teachers, and that they are able to teach their students well, we must keep teachers satisfied. Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction could be helpful information to make sure that countries have enough teachers, and that teachers have enough resources to do their jobs well.
 
 ### Data
 
@@ -135,13 +135,13 @@ The variables we are using are:
 Below are three plots that show our data and hopefully motivate our research questions and the analysis.
 ```{r, warning=FALSE, echo=FALSE}
 # Histogram of teacher satisfaction
-p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Plot 1: Histogram of Teacher Satisfaction", x="Teacher Satisfaction", y="Count")
+p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Plot 1: Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
 
 # Boxplot of whether they consider their school a collaborative environment to satisfaction
 p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() +
   labs(title="Plot 2: Relationship Between Collaboration Level
        of the School and Teacher Satisfaction",
-       x="Collaboration Level of the School",
+       x="Response to 'There is a collaborative school culture which is characterised by mutual support'",
        y="Teacher Satisfaction")
 
 # Boxplot of region to satisfaction
