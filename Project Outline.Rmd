@@ -61,7 +61,7 @@ teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree",
 ```
 
 
-We'll split the country data into regions using the United Nations Geoscheme categories, so that we can try to find regional patterns
+We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
 
 ```{r}
 summary(teacher_data$country)
@@ -69,23 +69,11 @@ summary(teacher_data$country)
 teacher_data$region[teacher_data$country %in% c("BRA", "CHL")] <- "South America"
 # Canada, Mexico, United States
 teacher_data$region[teacher_data$country %in% c("CAB", "MEX", "USA")] <- "North America"
-#  Bulgaria, Czech Republic,  Poland,  Romania, Russia, Slovak Republic
+# Belgium, Bulgaria, Czech Republic, Denmark, England, Spain, Estonia, Finland, France, Georgia, Croatia, Israel, Italy, Latvia, Netherlands, Norway, Poland, Portugal, Romania, Russia, Serbia, Slovak Republic, Sweden
 teacher_data$region[teacher_data$country %in% 
-                        c("BGR", "CZE", "POL", "ROU", "RUS", "SVK")] <- "Eastern Europe"
-# Denmark, England, Estonia, Finland,   Latvia,  Norway, Sweden
-teacher_data$region[teacher_data$country %in% 
-                        c("DNK", "ENG",  "EST", "FIN", "LVA", "NOR", "SWE")] <- "Northern Europe"
-
-# Spain, Croatia, Italy, Latvia,  Portugal,  Serbia, 
-teacher_data$region[teacher_data$country %in% 
-                        c("ESP", "HRV", "ITA", "LVA", "PRT", "SRB")] <- "Southern Europe"
-
-
-# Belgium,  France, Netherlands
-teacher_data$region[teacher_data$country %in% 
-                        c("BFL", "FRA","NLD")] <- "Western Europe"
-# Abu Dhabi, Georgia, Israel                     
-teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "Eastern Mediterranean"
+                        c("BFL", "BGR", "CZE", "DNK", "ENG", "ESP", "EST", "FIN", "FRA", "GEO", "HRV", "ISR", "ITA", "LVA", "NLD", "NOR", "POL", "PRT", "ROU", "RUS", "SRB", "SVK", "SWE")] <- "European"
+# Abu Dhabi,                     
+teacher_data$region[teacher_data$country %in% c("AAD")] <- "Eastern Mediterranean"
 # Australia, China, Japan, South Korea, Malaysia, New Zealand, Singapore
 teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
 teacher_data$region <- as.factor(teacher_data$region)
@@ -122,7 +110,7 @@ Each row of the dataset is for a single teacher's response to the questionairre.
 The variables we are using are:
 
 * `country (CNTRY):` Country of teacher (factor variable, 36 levels)
-* `region:` Region the teacher's country is in (factor variable, 5 levels)
+* `region:` Region the teacher's country is in (factor variable, 8 levels)
 * `gender (TT2G01):` Teacher Gender (factor variable, 2 levels)
 * `age (TT2G02):` Teacher Age (numeric variable)
 * `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
@@ -136,7 +124,7 @@ The variables we are using are:
 * `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches (boolean numeric variable)
 * `num_subjects:` The number of subjects the teacher teaches (numeric variable)
 * `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (factor variables, 4 levels)
-* `avg_sat:` An average of the ten questions related to teacher job satisfaction (numeric variable)
+* `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable)
 
 #### Initial Plots Describing Data
 
@@ -165,7 +153,7 @@ sum(na.omit(teacher_data$age_start) <= 15)
 ```
 
 ```{r}
-teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=region)) + geom_point(alpha= 0.5, shape=".") + geom_smooth(method="lm", se=F)
+teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=country)) + geom_point(alpha= 0.5, shape=".") + geom_smooth(method="lm", se=F)
 ```
 
 ##### Plot 2: Teacher Satisfaction vs Collaboration Level of the School
@@ -173,7 +161,9 @@ teacher_data %>% ggplot(aes(x=age, y=years_teacher, color=region)) + geom_point(
 teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot()
 ```
 
-### Analysis
+
+##### Plot 3: 
+### Analysis for Research Question 1
 
 To address our first research question, and try to identify which variables are the best indicators of teacher job satisfaction, we are going to try several techniques.
 
@@ -187,6 +177,9 @@ sat_indices <- grep("sat", names(teacher_data))[-11]
 #some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
 na_cols <- c(10,11)
 subject_indices <- c(23:34)
+#For the linear model with most of the predictors, let's remove the columns with a large number of na values.  
+#Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
+#Let's also remove the subject columns, since we have a column that stores the number of subjects each teacher is teaching
 m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_cols, sat_indices, subject_indices)])
 summary(m1)
 ```
@@ -194,7 +187,8 @@ summary(m1)
 Using stepwise regression
 ```{r}
 # remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
-x <- na.omit(teacher_data[, -c(sat_indices, na_indices, subject_indices)])
+#also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
+x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 m.full <- lm(sat_avg ~., data=x)
 m.empty <- lm(sat_avg ~ 1, data=x)
 ```
@@ -211,9 +205,11 @@ m.both <- step(m.empty, scope=list(upper=m.full),
 
 
 #### One-way Anova Tests
-Based on results so far, some potential candidates for predictors are: 
+TODO after the analysis above is completed.
 
-collab, prep_C
+Some potential candidates for predictors are: 
+
+collab, prep_C, and region
 
 
 #### Logistic Regression Analysis
@@ -221,3 +217,11 @@ collab, prep_C
 Logistic Regression:
 
 In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields slightly different results than our Linear Regression approach.
+
+For Logistic Regression we will:
+(1) Try a full model, with all the predictors
+(2) Try forwards, backwards and bidirectional stepwise selection
+
+Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied, and compare these results to the results we got from linear regression.
+
+### Analysis for Research Question 2
