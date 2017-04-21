@@ -189,7 +189,7 @@ Then we will analyze the models from (1) and (2) to try to determine which colum
 To address our second research question, and to try to identify the differences across different regions for teacher job satisfaction and other classroom related variables, we are going to try several techniques.
 
 (1) We are first going to examine a boxplot of sat_avg vs region, using the region variable as a factor (see plot 3 above). This will visually tell us whether there might be a significant difference in satisfaction across regions.
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in avg_sat by region could be due to other variables that are correlated with region.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in sat_avg by region could be due to other variables that are correlated with region.
 (3) Additionally, for the variables that were significant in part (2), we will also graph sat_avg as a function of that variable, but using separate graphs for each region (using faceting). This is to see if the relationship between that variable and sat_avg changes between different region.
 
 #### One-way ANOVA Test
