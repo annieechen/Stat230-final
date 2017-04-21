@@ -204,7 +204,7 @@ teacher_data <- teacher_data[,-1]
 # split into train and test
 set.seed(365)
 train_indices <- sample(nrow(teacher_data), .8 * nrow(teacher_data))
-train <- teacher_data[train_indices,]
+train <- na.omit(teacher_data[train_indices,])
 test <- teacher_data[-train_indices,]
 
 m1 <- glm(isSatisfied ~., data=train)
@@ -213,6 +213,8 @@ mean(p1.preds != test$isSatisfied, na.rm = TRUE)
 # see what our misclassification rate would be if we asigned randomly
 fake <- sample(test$isSatisfied, length(test$isSatisfied), replace=TRUE)
 mean(fake != test$isSatisfied, na.rm = TRUE)
+
+knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
 
 ```
 
