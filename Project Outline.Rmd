@@ -89,16 +89,15 @@ teacher_data$region <- as.factor(teacher_data$region)
 ```
 **Note:** We did some additional data cleaning after the last dataset submission.  That code is not displayed in this outline (asked on Piazza about it), however you might notice that some of the variables used in the plots below were not in the last dataset.
 
-### Introduction
+#### Introduction
 
-This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset.
-Some information about TALIS:
+This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset. We wrote about it in detail in the previous assignment, and have summarized it below:
 
-* It aimed to collect information on teaching profession, working conditions, and learning environments of schools
-* One goal was to come up with metrics and information that would enable comparisons across countries
-* It focused on SCED* Level 2 schools (lower secondary schools)
+* aimed to collect information on teaching profession, working conditions, and learning environments of schools
+* a goal was to come up with metrics and information that would enable comparisons across countries
+* focused on SCED* Level 2 schools (lower secondary schools)
 * At selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires
-* There are 36 countries in the dataset (some of which are non-English speaking countries). The only country requirement was that participating countries must be industrialized.
+* 36 countries in the dataset (some of which are non-English speaking countries). The only country requirement was that participating countries must be industrialized.
 
 #### Main Research Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
