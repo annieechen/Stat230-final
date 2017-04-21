@@ -140,10 +140,10 @@ Below are three plots that show our data and hopefully motivate our research que
 p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction", y="Count")
 
 # Boxplot of whether they consider their school a collaborative environment to satisfaction
-p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot()
+p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() + xlab("Collaboration") + ylab("Teacher Satisfaction")
 
 # Boxplot of region to satisfaction
-p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot()
+p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + xlab("Region") + ylab("Teacher Satisfaction")
 ```
 ```{r, echo=FALSE, fig.height=2, fig.width=10, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
