@@ -82,7 +82,7 @@ teacher_data$region[teacher_data$country %in%
 teacher_data$region[teacher_data$country %in% 
                         c("BFL", "FRA","NLD")] <- "Western Europe"
 # Abu Dhabi, Georgia, Israel                     
-teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "Eastern Mediterranean"
+teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "East Mediterranean"
 # Australia, China, Japan, South Korea, Malaysia, New Zealand, Singapore
 teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
 teacher_data$region <- as.factor(teacher_data$region)
@@ -140,10 +140,10 @@ p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) +
 p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot()
 p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot()
 ```
-```{r, echo=FALSE, fig.height=2, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, fig.height=2, fig.width=10, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
 ```
-```{r, echo=FALSE, fig.height=2.5}
+```{r, echo=FALSE, fig.height=2.5, fig.width=9}
 p3
 ```
 
@@ -162,8 +162,9 @@ To address our first research question, and try to identify which variables are 
 (2) We are going to use forward, backwards and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  Based on this, we will perform one-way ANOVA tests with each of these predictors, and graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.
 
-#### One-way Anova Tests
-TODO after the analysis above is completed.
+#### One-way ANOVA Test
+
+After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant variances in mean `sat_avg` across the predictors. 
 
 Some potential candidates for predictors are: 
 
@@ -183,6 +184,7 @@ Then we will analyze the models from (1) and (2) to try to determine which colum
 
 ### Analysis for Research Question 2
 
+TODO
 
 ### Appendix
 
