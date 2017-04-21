@@ -92,6 +92,13 @@ teacher_data$region <- as.factor(teacher_data$region)
 summary(teacher_data$region)
 ```
 
+We can take a look at average satisfaction by region.
+
+```{r}
+teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot()
+```
+
+
 ### Introduction
 
 
