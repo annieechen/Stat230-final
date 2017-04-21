@@ -163,7 +163,7 @@ p3
 
 ### Analysis for Research Question 1
 
-To address our first research question, and try to identify which variables are the best indicators of teacher job satisfaction, we are going to try several techniques.
+To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to several techniques.
 
 #### Linear Regression Analysis
 (1) We are first going to run two linear regression models.  One with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
