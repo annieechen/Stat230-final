@@ -105,11 +105,8 @@ Some information about TALIS:
 (2) How do teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
 
 #### Motivation of Study:
-* Education is important to any country's basic development and functioning
-* There is a fair amount of diversity across countries with regard to how well the teaching profession is respected, as well as how much countries fund their education systems.
-* As a result, teacher working conditions vary quite a bit
-* However, in order to make sure that there are enough teachers, and that they are able to teach their students well, it is important that teacher satisfaction is at a high enough level.  If teacher satisfaction is too low, it becomes difficult to retain a large enough teaching force
-* Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction, could be helpful information in order to make sure that countries have enough teachers, and that teachers have enough resources to do their jobs well.
+
+Obviously, education is important to any country's basic development and functioning. Respect for teachers and funding for schools varies by country. As a result, teacher working conditions vary quite a bit. To ensure that there are enough teachers, and that they are able to teach their students well, we must keep teachers satisfied. Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction could be helpful information to make sure that countries have enough teachers, and that teachers have enough resources to do their jobs well.
 
 ### Data
 
