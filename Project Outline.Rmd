@@ -166,8 +166,8 @@ p3
 To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to several techniques.
 
 #### Linear Regression Analysis
-(1) We are first going to run two linear regression models.  One with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
-(2) We are going to use forward, backwards and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
+(1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
+(2) We are going to use forward, backward and bidirectional stepwise selection, and to look at the linear models that end up getting chosen from those three methods.
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  Based on this, we will perform one-way ANOVA tests with each of these predictors, and graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.
 
 #### One-way ANOVA Test
