@@ -40,6 +40,9 @@ teacher_data <- teacher_data[, -36]
 #change some of the subject names (one of the comments in our dataset submission was that they weren't clear):
 names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
 names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
+
+#We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
+teacher_data$num_subjects <- rowSums(teacher_data[,24:35], na.rm=TRUE)
 ```
 
 A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
@@ -59,12 +62,12 @@ Introduction - No more than 1 page. Briefy describe the dataset you are studying
 
 This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset.
 Some information about TALIS:
+
 * It aimed to collect information on teaching profession, working conditions, and learning environments of schools
 * One goal was to come up with metrics and information that would enable comparisons across countries
-* It focused on lower secondary schools
-* There are 36 countries in the dataset
-
-SCED* Level 2 schools were selected. At selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires. The countries include non-English speaking countries. The only requirement was that participating countries must be industrialized. All the variables we were studying were self reported. 
+* It focused on SCED* Level 2 schools (lower secondary schools)
+* At selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires
+* There are 36 countries in the dataset (some of which are non-English speaking countries). The only country requirement was that participating countries must be industrialized.
 
 #### Main Research Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
@@ -78,6 +81,27 @@ SCED* Level 2 schools were selected. At selected schools, the principal (or head
 * Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction, could be helpful information in order to make sure that countries have enough teachers, and that teachers are able to do their jobs well.
 
 ### Data
+
+Each row of the dataset is for a single teacher's response to the questionairre.  Each column in the dataset corresponds to either a particular question in the questionairre, or a summary variable for a section of the questionairre.
+
+The variables we are using are:
+
+* `country (CNTRY):` Country of teacher (factor variable, 36 levels)
+* `gender (TT2G01):` Teacher Gender (factor variable, 2 levels)
+* `age (TT2G02):` Teacher Age (numeric variable)
+* `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
+* `train_stat (TT2G11):` Training level of teacher (factor variable)
+* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (factor variable, 4 levels)
+* `total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
+* `feedback_salary (TT2G30G):` Whether performance feedback influences salary (factor variable, 4 levels)
+* `collab (TT2G44E):` How collaborative is the school culture? (factor variable, 4 levels)
+* `num_students (TT2G38):` Number of students in the teacher’s class (numeric variable)
+* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (factor variable, 4 levels)
+* `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches (boolean numeric variable)
+* `num_subjects:` The number of subjects the teacher teaches (numeric variable)
+* `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (factor variables, 4 levels)
+* `avg_sat:` An average of the ten questions related to teacher job satisfaction (numeric variable)
+
 #### Initial Plots Describing Data
 ##### Plot 1: Teacher Age vs Years of Teaching Experience
 First, we look at a plot of age vs years teacher.
