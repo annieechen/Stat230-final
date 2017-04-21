@@ -160,7 +160,7 @@ Plot 1 provides a full histogram of teacher satisfaction. As we are later analyz
 
 Plot 2 provides a box plot of collab vs sat_avg. This plot is an example of one we would find in regard to our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. In looking at this particular plot, we can actually see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question, as well as more rigorous analysis to be described below.
 
-Plot 3 provides a box plot of geographic region vs sat_avg. Our second research question revolves around variations in teacher satisfaction across different geographical regions. Visually, while all median values hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). In our second research question, we will assess whether region alone is predictive of satisfaction, as well as whether region is predictive of other variables that themselves are significantly predictive of satisfaction.
+Plot 3 provides a box plot of geographic region vs sat_avg. Our second research question revolves around variations in different variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). In our second research question, we will assess whether region is predictive of satisfaction in addition to other variables.
 
 ### Analysis for Research Question 1
 
@@ -195,28 +195,21 @@ Then we will analyze the models from (1) and (2) to try to determine which colum
 
 To address our second research question, and try to identify the differences across different regions for teacher job satisfaction, we are going to try several techniques.
 
-#### Linear Regression Analysis
-(1) We are first going to run a linear regression model that predicts sat_avg with region, using the region variable as a factor.
-(2) We are going to run a linear regression model to predict the significant predictive factors from Research Question 1 (collab, prep_C, and region) to see if perhaps the region is affecting satisfaction indirectly, by having noticeable differences in these predictors across regions.
+#### Plots
+
+(1) We are first going to plot sat_avg vs region, using the region variable as a factor. This will visually tell us whether there might be a significant difference in satisfaction across regions.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
 (3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
 #### One-way ANOVA Test
 
 After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant variances in mean `sat_avg` across regions.
 
-We will also see if there are statistically significant variances in any of the predictors from part (1) that were particularly predictive of teacher satisfaction.
+We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
 
-#### Logistic Regression Analysis
+#### Linear Model
 
-Logistic Regression:
-
-As was done in the analysis of Research Question 1, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields slightly different results than our Linear Regression approach.
-
-For Logistic Regression we will:
-(1) Try a model with just region
-(2) Try model with region and any other variables that region is particularly predictive for
-
-Then we will analyze the models from (1) and (2) to try to determine whether region alone, or perhaps indirectly through its effect on other variables, is predictive of teacher satisfaction and compare these results to the results we got from linear regression.
+Finally, we will perform a linear model of sat_avg against region and all of the variables that region is predictive of, and see how this compares to the models found in part (1), when the best predictors were chosen regardless of region.
 
 ### Appendix
 
