@@ -118,7 +118,7 @@ The variables we are using are:
 * `gender (TT2G01):` Teacher Gender (factor variable, 2 levels)
 * `age (TT2G02):` Teacher Age (numeric variable)
 * `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
-* `train_stat (TT2G11):` Training level of teacher (factor variable)
+* `train_stat (TT2G11):` Training level of teacher (factor variable, 2 levels)
 * `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (factor variable, 4 levels)
 * `total_time (TT2G16):` Hours per week spent on teaching related activities (numeric variable)
 * `feedback_salary (TT2G30G):` Whether performance feedback influences salary (factor variable, 4 levels)
@@ -141,17 +141,18 @@ p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) +
 p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() +
   labs(title="Plot 2: Relationship Between Collaboration Level
        of the School and Teacher Satisfaction",
-       x="Response to 'There is a collaborative school culture which is characterised by mutual support'",
+       x="Response to 'There is a collaborative school culture
+       which is characterised by mutual support'",
        y="Teacher Satisfaction")
 
 # Boxplot of region to satisfaction
 p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + labs(title="Plot 3: Teacher Satisfaction by Region", x="Region", y="Teacher Satisfaction")
 ```
 
-```{r, echo=FALSE, fig.height=2, fig.width=10, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
 ```
-```{r, echo=FALSE, fig.height=2.5, fig.width=9}
+```{r, echo=FALSE, fig.height=2.25, fig.width=9}
 p3
 ```
 
@@ -159,38 +160,39 @@ p3
 
 **Plot 2** provides a box plot of collab vs sat_avg. This plot is an example of one we would find in regard to our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. In looking at this particular plot, we can actually see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question, as well as more rigorous analysis to be described below.
 
-**Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our second research question, which revolves around variations in sat_avg and other variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore additional plots like this one, but with other variables, in our analysis below.
+**Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our second research question, which revolves around variations in sat_avg and other variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore additional plots like this one, but with other variables, in our full analysis.
 
 ### Analysis for Research Question 1
 
-To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to several techniques.
+To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
 
 #### Linear Regression Analysis
 (1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
-(2) We are going to use forward, backward and bidirectional stepwise selection, and to look at the linear models that end up getting chosen from those three methods.
-(3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  Based on this, we will perform one-way ANOVA tests with each of these predictors, and graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.
+(2) We are going to use forward, backward and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
+(3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
 
 #### One-way ANOVA Test
 
-After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant variances in mean `sat_avg` across the predictors. Based on results so far, some potential candidates for predictors are collab, prep_C, and region.
+Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, prep_C, and region.
 
 #### Logistic Regression Analysis
 
-In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields slightly different results than our Linear Regression approach.
+In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields different results than our Linear Regression approach.
 
 For Logistic Regression we will:
-(1) Try a full model, with all the predictors
-(2) Try forward, backward and bidirectional stepwise selection
 
-Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied, and to compare these results to the results we got from linear regression.
+(1) Try a full model, with all the predictors.
+(2) Try forward, backward and bidirectional stepwise selection.
+
+Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied.  We will then compare these results to the results we got from linear regression.
 
 ### Analysis for Research Question 2
 
 To address our second research question, and to try to identify the differences across different regions for teacher job satisfaction and other classroom related variables, we are going to try several techniques.
 
 (1) We are first going to examine a boxplot of sat_avg vs region, using the region variable as a factor (see plot 3 above). This will visually tell us whether there might be a significant difference in satisfaction across regions.
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in avg_sat by region could be due to other variables that are correlated with region.
-(3) Additionally, for the variables that were significant in part (2), we will also graph sat_avg as a function of that variable, but using separate graphs for each region (using faceting). This is to see if the relationship between that variable and sat_avg changes between different region.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in sat_avg by region could be due to other variables that are correlated with region.
+(3) Additionally, for the variables that were significant in part (2), we will also graph sat_avg as a function of that variable, but using separate graphs for each region (using faceting). This is to see if the relationship between that variable and sat_avg changes between different regions.
 
 #### One-way ANOVA Test
 
