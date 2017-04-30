@@ -111,7 +111,7 @@ Some information about TALIS:
 
 ### Data
 
-Each row of the dataset is for a single teacher's response to the questionnaire.  Each column in the dataset corresponds to either a particular question in the questionnaire, or a summary variable for a section of the questionnaire.
+Each row of the dataset is for a single teacher's response to the questionnaire (There are 117876 rows).  Each column in the dataset corresponds to either a particular question in the questionnaire, or a summary variable for a section of the questionnaire.
 
 The variables we are using are:
 
