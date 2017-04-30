@@ -201,9 +201,9 @@ subject_indices <- c(23:34)
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
-#try model with country variable and not region
+# Try model with country variable and not region
 m1 <- lm(sat_avg ~ ., data=x[,-13])
-#try model with region variable and not country
+# Try model with region variable and not country
 m2 <- lm(I(sat_avg^2) ~ ., data=x[,-13])
 summary(m1)
 summary(m2)
@@ -252,7 +252,7 @@ teacher_data$isSatisfied <- teacher_data$sat_avg > 2.5
 teacher_data <- teacher_data[!is.na(teacher_data$sat_avg),]
 # remove SAT questions, since they obviously explain our predictor variable
 sat_indices <- grep("sat", names(teacher_data))[-12]
-subject_indices <- c(24:35)
+subject_indices <- c(23:34)
 teacher_data <- teacher_data[, -c(sat_indices, subject_indices)]
 # don't use country
 teacher_data <- teacher_data[,-1]
@@ -269,7 +269,7 @@ mean(p1.preds != test$isSatisfied, na.rm = TRUE)
 fake <- sample(test$isSatisfied, length(test$isSatisfied), replace=TRUE)
 mean(fake != test$isSatisfied, na.rm = TRUE)
 
-knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
+# knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
 ```
 
 ### Analysis for Research Question 2
@@ -285,14 +285,47 @@ To address our second research question, and try to identify the differences acr
 p3
 ```
 
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly. These variables are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher. We will not, however, talk about country because of the obvious correlation between that and region. We will also not talk about gender, as this is not a scale in the dataset.
+
+```{r}
+# Collab plot
+teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
+
+# prep_A plot
+teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_A), median), y=as.numeric(prep_A))) + geom_boxplot() + xlab("Region") + ylab("prep_A")
+
+# prep_B plot
+teacher_data %>% filter(!is.na(prep_B)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_B), median), y=as.numeric(prep_B))) + geom_boxplot() + xlab("Region") + ylab("prep_B")
+
+# prep_C plot
+teacher_data %>% filter(!is.na(prep_C)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_C), median), y=as.numeric(prep_C))) + geom_boxplot() + xlab("Region") + ylab("prep_C")
+
+# age plot
+teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
+
+# total_time plot
+teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
+
+# years_teacher plot
+teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
+```
+
 (3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
 ```{r}
-# Template code for (2) -- TODO: switch collab with predictive factors after found:
-p4 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
-p4
+# Check which variables have a significant correlation with region
+anova(lm(as.numeric(collab) ~ region, data=teacher_data))
+anova(lm(as.numeric(prep_A) ~ region, data=teacher_data))
+anova(lm(as.numeric(prep_B) ~ region, data=teacher_data))
+anova(lm(as.numeric(prep_C) ~ region, data=teacher_data))
+anova(lm(as.numeric(age) ~ region, data=teacher_data))
+anova(lm(as.numeric(total_time) ~ region, data=teacher_data))
+anova(lm(as.numeric(years_teacher) ~ region, data=teacher_data))
+```
 
+It looks like all of the variables vary across regions.
+
+```{r}
 # Template code for regression of (3) TODO: switch collab with predictive factors after found:
 summary(lm(sat_avg ~ region*as.numeric(collab), data=teacher_data))
 
