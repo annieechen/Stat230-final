@@ -190,7 +190,7 @@ for(i in 1:ncol(teacher_data)) {
 subject_indices <- c(23:34)
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
-#Let's also remove the subject columns, since we have a column that stores the number of subjects each teacher is teaching
+# Let's also remove the subject columns, since we have a column that stores the number of subjects each teacher is teaching
 m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_cols, sat_indices, subject_indices)])
 summary(m1)
 ```
@@ -214,8 +214,6 @@ m.both <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="both", trace=FALSE)
 ```
 
-
-
 #### One-way ANOVA Test
 
 Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, prep_C, and region.
@@ -230,28 +228,6 @@ For Logistic Regression we will:
 (2) Try forward, backward and bidirectional stepwise selection.
 
 Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied.  We will then compare these results to the results we got from linear regression.
-
-### Analysis for Research Question 2
-
-To address our second research question, and to try to identify the differences across different regions for teacher job satisfaction and other classroom related variables, we are going to try several techniques.
-
-(1) We are first going to examine a boxplot of sat_avg vs region, using the region variable as a factor (see plot 3 above). This will visually tell us whether there might be a significant difference in satisfaction across regions.
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in sat_avg by region could be due to other variables that are correlated with region.
-(3) Additionally, for the variables that were significant in part (2), we will also graph sat_avg as a function of that variable, but using separate graphs for each region (using faceting). This is to see if the relationship between that variable and sat_avg changes between different regions.
-
-#### One-way ANOVA Test
-
-After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant differences in mean `sat_avg` across regions. We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
-
-
-# Conclusions
-
-# Code Appendix
-
-Cleaning the Data
-
-
-logistic regression crap IDK
 
 ```{r}
 teacher_data$isSatisfied <- teacher_data$sat_avg > 2.5
@@ -280,7 +256,6 @@ knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
 
 ```
 
-
 ### Analysis for Research Question 2
 
 To address our second research question, and try to identify the differences across different regions for teacher job satisfaction, we are going to try several techniques.
@@ -288,13 +263,16 @@ To address our second research question, and try to identify the differences acr
 #### Plots
 
 (1) We are first going to plot sat_avg vs region, using the region variable as a factor. This will visually tell us whether there might be a significant difference in satisfaction across regions.
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
-(3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
 ```{r}
 ## p3, used as an example plot earlier in this write-up, is a plot of sat_avg vs region
 p3
+```
 
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
+(3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
+
+```{r}
 # Template code for (2) -- TODO: switch collab with predictive factors after found:
 p4 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
 p4
@@ -316,9 +294,11 @@ teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(
 After the analysis above is completed, we'll run an ANOVA test to see if there are statistically significant variances in mean `sat_avg` across regions.
 
 ```{r}
+# Regression of sat_avg vs region
 msatreg <- lm(sat_avg ~ region, data=teacher_data)
 summary(msatreg)
 
+# ANOVA of regression
 anova(msatreg)
 ```
 
