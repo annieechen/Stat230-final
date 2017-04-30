@@ -43,13 +43,13 @@ names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
 names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 
 # We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
-teacher_data$num_subjects <- rowSums(teacher_data[,24:35], na.rm=TRUE)
+subjcols <- c(24:35)
+teacher_data$num_subjects <- rowSums(teacher_data[,subjcols], na.rm=TRUE)
 
 # We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
 teacher_data <- teacher_data[, -which(names(teacher_data) %in% c("satisfaction"))]
 
 # A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
-
 teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
