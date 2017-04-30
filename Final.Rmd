@@ -176,35 +176,49 @@ To address our first research question, and to try to identify which variables a
 
 #### Linear Regression Analysis
 (1) Before creating a linear regression model, let's first plot our data and see what relations there appear to be between the variables.
+```{r}
+ggpairs(teacher_data, cardinality_threshold=NULL)
+```
 
-(1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
+(1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 10% of observations.
 (2) We are going to use forward, backward and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
 
 ```{r}
+#In order to have easier control over which predictors to use in our model, below we create several lists of indices that we might want to include or exclude as a group
+
+# We don't want to use the 10 satisfaction questions to predict satisfaction, so let's create a list of the indices we need to avoid
 sat_indices <- grep("sat", names(teacher_data))[-11]
+
 # Some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
 na_cols <- c()
 for(i in 1:ncol(teacher_data)) {
-  if(sum(is.na(teacher_data[,i]))/nrow(teacher_data) > 0.05) {
+  if(sum(is.na(teacher_data[,i]))/nrow(teacher_data) > 0.10) {
     na_cols <- c(na_cols,i)
   }
 }
 
 subject_indices <- c(23:34)
+
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
 #Let's also remove the subject columns, since we have a column that stores the number of subjects each teacher is teaching
-m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_cols, sat_indices, subject_indices)])
+x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
+#try model with country variable and not region
+m1 <- lm(sat_avg ~ ., data=x[,-13])
+#try model with region variable and not country
+m2 <- lm(I(sat_avg^2) ~ ., data=x[,-13])
 summary(m1)
+summary(m2)
 ```
+
+Let's make sure that the assumptions for linear regression hold.
 
 Using stepwise regression
 ```{r}
 # remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
 #also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
-x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
-m.full <- lm(sat_avg ~., data=x)
+m.full <- lm(sat_avg ~., data=x[,-13])
 m.empty <- lm(sat_avg ~ 1, data=x)
 ```
 
@@ -218,7 +232,7 @@ m.both <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="both", trace=FALSE)
 ```
 
-
+We can see from the results above, that all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
 
 #### One-way ANOVA Test
 
