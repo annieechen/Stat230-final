@@ -201,9 +201,9 @@ subject_indices <- c(23:34)
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 #try model with country variable and not region
-m1 <- lm(sat_avg ~ ., data=x[,-13])
+m1 <- lm(sat_avg ~ ., data=x[,-which(names(teacher_data) %in% c("region"))])
 #try model with region variable and not country
-m2 <- lm(I(sat_avg^2) ~ ., data=x[,-13])
+m2 <- lm(I(sat_avg^2) ~ ., data=x[,-which(names(teacher_data) %in% c("region"))])
 summary(m1)
 summary(m2)
 ```
