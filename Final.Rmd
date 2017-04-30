@@ -22,44 +22,41 @@ library(grid)
 library(gridExtra)
 ```
 
-### Appendix - put here so that it runs first, we'll move it to the end of the file at the very end 
-
 ```{r, include=FALSE}
 ## NOTE! THIS RUNS AND DOES NOT SHOW IN KNITTED
-#To start, let's read in the cleaned datasets from our last submission:
+# To start, let's read in the cleaned datasets from our last submission:
 teacher_data <- read.csv("TALIS.csv")
 subject_data <- read.csv("subject_data.csv", as.is=TRUE)
 
-#change column names of 10 satisfaction questions to make more readable
-indices <- grep("TT2G46", colnames(teacher_data))[-11]
+# Change column names of 10 satisfaction questions to make more readable
+satcols <- grep("TT2G46", colnames(teacher_data))
+indices <- satcols[satcols != which(colnames(teacher_data) == "TT2G46_avg")]
 colnames(teacher_data)[indices] <- c("sat1", "sat2", "sat3", "sat4", "sat5", "sat6", "sat7", "sat8", "sat9", "sat10")
 names(teacher_data)[names(teacher_data)=="TT2G46_avg"] <- "sat_avg"
 
-#Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
-teacher_data <- teacher_data[, -24]
+# Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
+# Column "ID" is no longer necessary, was used for making the subject dataset
+teacher_data <- teacher_data[,-which(names(teacher_data) %in% c("TT2G15","ID"))]
 
-#Column "ID" is no longer necessary, was used for making the subject dataset
-teacher_data <- teacher_data[, -36]
-
-#change some of the subject names (one of the comments in our dataset submission was that they weren't clear):
+# Change some of the subject names (one of the comments in our dataset submission was that they weren't clear):
 names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
 names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 
-#We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
-teacher_data$num_subjects <- rowSums(teacher_data[,24:35], na.rm=TRUE)
+# We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
+subjcols <- c(24:35)
+teacher_data$num_subjects <- rowSums(teacher_data[,subjcols], na.rm=TRUE)
 
-#We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
-teacher_data <- teacher_data[, -13]
+# We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
+teacher_data <- teacher_data[, -which(names(teacher_data) %in% c("satisfaction"))]
+
 # A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
-
 teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("No positive change", "A small change", "A moderate change", "A large change"), ordered=TRUE)
 teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"), ordered=TRUE)
 
-
-#We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
+# We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
 
 # Brazil, Chile
 teacher_data$region[teacher_data$country %in% c("BRA", "CHL")] <- "South America"
@@ -202,7 +199,6 @@ subject_indices <- c(23:34)
 
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
-#Let's also remove the subject columns, since we have a column that stores the number of subjects each teacher is teaching
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 #try model with country variable and not region
 m1 <- lm(sat_avg ~ ., data=x[,-13])
@@ -249,28 +245,6 @@ For Logistic Regression we will:
 
 Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied.  We will then compare these results to the results we got from linear regression.
 
-### Analysis for Research Question 2
-
-To address our second research question, and to try to identify the differences across different regions for teacher job satisfaction and other classroom related variables, we are going to try several techniques.
-
-(1) We are first going to examine a boxplot of sat_avg vs region, using the region variable as a factor (see plot 3 above). This will visually tell us whether there might be a significant difference in satisfaction across regions.
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in sat_avg by region could be due to other variables that are correlated with region.
-(3) Additionally, for the variables that were significant in part (2), we will also graph sat_avg as a function of that variable, but using separate graphs for each region (using faceting). This is to see if the relationship between that variable and sat_avg changes between different regions.
-
-#### One-way ANOVA Test
-
-After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant differences in mean `sat_avg` across regions. We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
-
-
-# Conclusions
-
-# Code Appendix
-
-Cleaning the Data
-
-
-logistic regression crap IDK
-
 ```{r}
 teacher_data$isSatisfied <- teacher_data$sat_avg > 2.5
 # remove NA rows, since they don't contain meaningful information for us.
@@ -298,7 +272,6 @@ knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
 
 ```
 
-
 ### Analysis for Research Question 2
 
 To address our second research question, and try to identify the differences across different regions for teacher job satisfaction, we are going to try several techniques.
@@ -306,13 +279,16 @@ To address our second research question, and try to identify the differences acr
 #### Plots
 
 (1) We are first going to plot sat_avg vs region, using the region variable as a factor. This will visually tell us whether there might be a significant difference in satisfaction across regions.
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
-(3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
 ```{r}
 ## p3, used as an example plot earlier in this write-up, is a plot of sat_avg vs region
 p3
+```
 
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
+(3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
+
+```{r}
 # Template code for (2) -- TODO: switch collab with predictive factors after found:
 p4 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
 p4
@@ -334,9 +310,11 @@ teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(
 After the analysis above is completed, we'll run an ANOVA test to see if there are statistically significant variances in mean `sat_avg` across regions.
 
 ```{r}
+# Regression of sat_avg vs region
 msatreg <- lm(sat_avg ~ region, data=teacher_data)
 summary(msatreg)
 
+# ANOVA of regression
 anova(msatreg)
 ```
 
