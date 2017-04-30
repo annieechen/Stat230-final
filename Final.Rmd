@@ -1,7 +1,7 @@
 ---
-title: "Project Outline"
+title: "Final Project""
 author: "Veena Advani, Annie Chen, Robert Tung"
-date: "4/18/2017"
+date: "Due 4/28/2017"
 output: html_document
 ---
 
@@ -22,6 +22,7 @@ library(grid)
 library(gridExtra)
 ```
 
+### Appendix - put here so that it runs first, we'll move it to the end of the file at the very end 
 
 ```{r, include=FALSE}
 ## NOTE! THIS RUNS AND DOES NOT SHOW IN KNITTED
@@ -49,6 +50,7 @@ teacher_data$num_subjects <- rowSums(teacher_data[,24:35], na.rm=TRUE)
 
 #We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
 teacher_data <- teacher_data[, -13]
+# A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
 
 teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
@@ -87,7 +89,7 @@ teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "East M
 teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
 teacher_data$region <- as.factor(teacher_data$region)
 ```
-### Introduction
+# Introduction
 
 This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset.
 Some information about TALIS:
@@ -109,7 +111,8 @@ Some information about TALIS:
 * However, in order to make sure that there are enough teachers, and that they are able to teach their students well, it is important that teacher satisfaction is at a high enough level.  If teacher satisfaction is too low, it becomes difficult to retain a large enough teaching force
 * Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction, could be helpful information in order to make sure that countries have enough teachers, and that teachers have enough resources to do their jobs well.
 
-### Data
+# Data
+
 
 Each row of the dataset is for a single teacher's response to the questionnaire.  Each column in the dataset corresponds to either a particular question in the questionnaire, or a summary variable for a section of the questionnaire.
 
@@ -132,64 +135,85 @@ The variables we are using are:
 * `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (factor variables, 4 levels)
 * `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable)
 
+# Analysis
+
 #### Initial Plots Describing Data
 
 Below are three plots that show our data and hopefully motivate our research questions and the analysis.
-```{r, warning=FALSE}
+```{r, warning=FALSE, echo=FALSE}
 # Histogram of teacher satisfaction
-p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction", y="Count")
+p1 <- teacher_data %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Plot 1: Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
 
 # Boxplot of whether they consider their school a collaborative environment to satisfaction
-p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() + xlab("Collaboration") + ylab("Teacher Satisfaction")
+p2 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot() +
+  labs(title="Plot 2: Relationship Between Collaboration Level
+       of the School and Teacher Satisfaction",
+       x="Response to 'There is a collaborative school culture
+       which is characterised by mutual support'",
+       y="Teacher Satisfaction")
 
 # Boxplot of region to satisfaction
-p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + xlab("Region") + ylab("Teacher Satisfaction")
+p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, -sat_avg, median), y=sat_avg)) + geom_boxplot() + labs(title="Plot 3: Teacher Satisfaction by Region", x="Region", y="Teacher Satisfaction")
 ```
-```{r, echo=FALSE, fig.height=2, fig.width=10, message=FALSE, warning=FALSE}
+
+```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
 ```
-```{r, echo=FALSE, fig.height=2.5, fig.width=9}
+```{r, echo=FALSE, fig.height=2.25, fig.width=9}
 p3
 ```
 
-##### Plot 1: Histogram of Teacher Satisfaction
-##### Plot 2: Teacher Satisfaction vs Collaboration Level of the School
-##### Plot 3: Teacher Region vs Teacher Satisfaction
+**Plot 1** provides a full histogram of teacher satisfaction. As we are later analyzing the effect of different variables on teacher satisfaction, and the variation between different regions, it is important to note the overall distribution of the data. 
 
-Plot 1 provides a full histogram of teacher satisfaction. As we are later analyzing the effect of different variables on teacher satisfaction, and the variation between different regions, it is important to note the overall distribution of the data. For example, having a linear model predict a satisfaction score of 3 is very different if the majority of the teacher satisfaction data clumps around 1 as opposed to if all of the data clumps around 3.
+**Plot 2** provides a box plot of collab vs sat_avg. This plot is an example of one we would find in regard to our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. In looking at this particular plot, we can actually see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question, as well as more rigorous analysis to be described below.
 
-Plot 2 provides a box plot of collab vs sat_avg. This plot is an example of one we would find in regard to our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. In looking at this particular plot, we can actually see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question, as well as more rigorous analysis to be described below.
-
-Plot 3 provides a box plot of geographic region vs sat_avg. Our second research question revolves around variations in different variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). In our second research question, we will assess whether region is predictive of satisfaction in addition to other variables.
+**Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our second research question, which revolves around variations in sat_avg and other variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore additional plots like this one, but with other variables, in our full analysis.
 
 ### Analysis for Research Question 1
 
-To address our first research question, and try to identify which variables are the best indicators of teacher job satisfaction, we are going to try several techniques.
+To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
 
 #### Linear Regression Analysis
-(1) We are first going to run two linear regression models.  One with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
-(2) We are going to use forward, backwards and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
-(3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  Based on this, we will perform one-way ANOVA tests with each of these predictors, and graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.
+(1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
+(2) We are going to use forward, backward and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
+(3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
 
 #### One-way ANOVA Test
 
-After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant variances in mean `sat_avg` across the predictors. 
-
-Some potential candidates for predictors are: 
-
-collab, prep_C, and region
+Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, prep_C, and region.
 
 #### Logistic Regression Analysis
 
-Logistic Regression:
-
-In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields slightly different results than our Linear Regression approach.
+In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields different results than our Linear Regression approach.
 
 For Logistic Regression we will:
-(1) Try a full model, with all the predictors
-(2) Try forwards, backwards and bidirectional stepwise selection
 
-Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied, and compare these results to the results we got from linear regression.
+(1) Try a full model, with all the predictors.
+(2) Try forward, backward and bidirectional stepwise selection.
+
+Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied.  We will then compare these results to the results we got from linear regression.
+
+### Analysis for Research Question 2
+
+To address our second research question, and to try to identify the differences across different regions for teacher job satisfaction and other classroom related variables, we are going to try several techniques.
+
+(1) We are first going to examine a boxplot of sat_avg vs region, using the region variable as a factor (see plot 3 above). This will visually tell us whether there might be a significant difference in satisfaction across regions.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps region is correlated with some of these other variables.  It's possible that the differences in sat_avg by region could be due to other variables that are correlated with region.
+(3) Additionally, for the variables that were significant in part (2), we will also graph sat_avg as a function of that variable, but using separate graphs for each region (using faceting). This is to see if the relationship between that variable and sat_avg changes between different regions.
+
+#### One-way ANOVA Test
+
+After the analysis above is completed, we'll run ANOVA tests to see if there are statistically significant differences in mean `sat_avg` across regions. We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
+
+
+# Conclusions
+
+# Code Appendix
+
+Cleaning the Data
+
+
+logistic regression crap IDK
 
 ```{r}
 teacher_data$isSatisfied <- teacher_data$sat_avg > 2.5
@@ -266,78 +290,4 @@ We will also see if there are statistically significant variances across regions
 # Template code for anova of predictor against region TODO: switch collab with predictive factors after found:
 mcollabreg <- lm(collab ~ region, data=teacher_data)
 anova(msatreg)
-```
-
-### Appendix
-
-We've added our data cleaning code, with some slight changes from our last submission.
-```{r, eval=FALSE}
-#To start, let's read in the cleaned datasets from our last submission:
-teacher_data <- read.csv("TALIS.csv")
-subject_data <- read.csv("subject_data.csv", as.is=TRUE)
-
-#change column names of 10 satisfaction questions to make more readable
-indices <- grep("TT2G46", colnames(teacher_data))[-11]
-colnames(teacher_data)[indices] <- c("sat1", "sat2", "sat3", "sat4", "sat5", "sat6", "sat7", "sat8", "sat9", "sat10")
-names(teacher_data)[names(teacher_data)=="TT2G46_avg"] <- "sat_avg"
-
-#Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
-teacher_data <- teacher_data[, -24]
-
-#Column "ID" is no longer necessary, was used for making the subject dataset
-teacher_data <- teacher_data[, -36]
-
-#change some of the subject names (one of the comments in our dataset submission was that they weren't clear):
-names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
-names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
-
-#We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
-teacher_data$num_subjects <- rowSums(teacher_data[,24:35], na.rm=TRUE)
-
-#We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
-teacher_data <- teacher_data[, -13]
-```
-
-A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
-
-```{r,eval=FALSE}
-teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
-teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
-teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
-
-teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("No positive change", "A small change", "A moderate change", "A large change"), ordered=TRUE)
-
-teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"), ordered=TRUE)
-```
-
-
-We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
-
-```{r,eval=FALSE}
-summary(teacher_data$country)
-# Brazil, Chile
-teacher_data$region[teacher_data$country %in% c("BRA", "CHL")] <- "South America"
-# Canada, Mexico, United States
-teacher_data$region[teacher_data$country %in% c("CAB", "MEX", "USA")] <- "North America"
-#  Bulgaria, Czech Republic,  Poland,  Romania, Russia, Slovak Republic
-teacher_data$region[teacher_data$country %in% 
-                        c("BGR", "CZE", "POL", "ROU", "RUS", "SVK")] <- "Eastern Europe"
-# Denmark, England, Estonia, Finland,   Latvia,  Norway, Sweden
-teacher_data$region[teacher_data$country %in% 
-                        c("DNK", "ENG",  "EST", "FIN", "LVA", "NOR", "SWE")] <- "Northern Europe"
-
-# Spain, Croatia, Italy, Latvia,  Portugal,  Serbia, 
-teacher_data$region[teacher_data$country %in% 
-                        c("ESP", "HRV", "ITA", "LVA", "PRT", "SRB")] <- "Southern Europe"
-
-
-# Belgium,  France, Netherlands
-teacher_data$region[teacher_data$country %in% 
-                        c("BFL", "FRA","NLD")] <- "Western Europe"
-# Abu Dhabi, Georgia, Israel                     
-teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "Eastern Mediterranean"
-# Australia, China, Japan, South Korea, Malaysia, New Zealand, Singapore
-teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
-teacher_data$region <- as.factor(teacher_data$region)
-summary(teacher_data$region)
 ```
