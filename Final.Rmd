@@ -20,6 +20,7 @@ library(reshape2)
 library(FNN)
 library(grid)
 library(gridExtra)
+library(GGally)
 ```
 
 ### Appendix - put here so that it runs first, we'll move it to the end of the file at the very end 
@@ -173,6 +174,7 @@ p3
 To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
 
 #### Linear Regression Analysis
+
 (1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
 (2) We are going to use forward, backward and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
