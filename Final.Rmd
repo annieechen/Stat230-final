@@ -173,7 +173,8 @@ To address our first research question, and to try to identify which variables a
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
 
 ```{r}
-sat_indices <- grep("sat", names(teacher_data))[-11]
+satcols <- grep("sat", colnames(teacher_data))
+sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
 # Some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
 na_cols <- c()
 for(i in 1:ncol(teacher_data)) {
@@ -248,7 +249,6 @@ fake <- sample(test$isSatisfied, length(test$isSatisfied), replace=TRUE)
 mean(fake != test$isSatisfied, na.rm = TRUE)
 
 knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
-
 ```
 
 ### Analysis for Research Question 2
