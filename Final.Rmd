@@ -178,6 +178,39 @@ To address our first research question, and to try to identify which variables a
 (2) We are going to use forward, backward and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
 
+```{r}
+sat_indices <- grep("sat", names(teacher_data))[-11]
+#some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
+na_cols <- c(10,11)
+subject_indices <- c(23:34)
+#For the linear model with most of the predictors, let's remove the columns with a large number of na values.  
+#Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
+#Let's also remove the subject columns, since we have a column that stores the number of subjects each teacher is teaching
+m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_cols, sat_indices, subject_indices)])
+summary(m1)
+```
+
+Using stepwise regression
+```{r}
+# remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
+#also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
+x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
+m.full <- lm(sat_avg ~., data=x)
+m.empty <- lm(sat_avg ~ 1, data=x)
+```
+
+Forward, backwards, and both
+```{r}
+m.forward <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="forward", trace=FALSE)
+m.backward <- step(m.full, scope=list(lower=m.empty),
+                  data=x, direction="backward", trace=FALSE)
+m.both <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="both", trace=FALSE)
+```
+
+
+
 #### One-way ANOVA Test
 
 Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, prep_C, and region.
