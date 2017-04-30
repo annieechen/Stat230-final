@@ -180,7 +180,6 @@ Based on the predictors that were significant from part (3) above, we will perfo
 In addition to using linear regression, we will also then convert our job satisfaction variable into a categorical variable with 2 categories, "satisfied" and "unsatisfied".  We will then see if Logistic Regression yields different results than our Linear Regression approach.
 
 For Logistic Regression we will:
-
 (1) Try a full model, with all the predictors.
 (2) Try forward, backward and bidirectional stepwise selection.
 
