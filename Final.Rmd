@@ -20,6 +20,7 @@ library(reshape2)
 library(FNN)
 library(grid)
 library(gridExtra)
+library(leaps)
 ```
 
 ```{r, include=FALSE}
@@ -202,9 +203,9 @@ subject_indices <- c(23:34)
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 # Try model with country variable and not region
-m1 <- lm(sat_avg ~ ., data=x[,-13])
+m1 <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
 # Try model with region variable and not country
-m2 <- lm(I(sat_avg^2) ~ ., data=x[,-13])
+m2 <- lm(I(sat_avg^2) ~ ., data=x[,-which(names(x) %in% c("region"))])
 summary(m1)
 summary(m2)
 ```
@@ -221,15 +222,31 @@ m.empty <- lm(sat_avg ~ 1, data=x)
 
 Forward, backwards, and both
 ```{r}
+#with AIC
 m.forward <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="forward", trace=FALSE)
 m.backward <- step(m.full, scope=list(lower=m.empty),
                   data=x, direction="backward", trace=FALSE)
 m.both <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="both", trace=FALSE)
+
+#with BIC
+m.forward <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="forward", trace=FALSE, k=log(nrow(x)))
+m.backward <- step(m.full, scope=list(lower=m.empty),
+                  data=x, direction="backward", trace=FALSE, k=log(nrow(x)))
+m.both <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="both", trace=FALSE, k=log(nrow(x)))
 ```
 
-We can see from the results above, that all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
+We can see from the results above, that with AIC as the criterion, all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
+
+Using the BIC criterion, all three models ended up using all of the same predictors as the AIC stepwise models, except without prep_A.
+
+```{r}
+#m3 <- regsubsets(sat_avg ~ ., data=x, nbest=1, method="exhaustive")
+```
+
 
 #### One-way ANOVA Test
 
