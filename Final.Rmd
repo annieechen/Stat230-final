@@ -22,34 +22,32 @@ library(grid)
 library(gridExtra)
 ```
 
-### Appendix - put here so that it runs first, we'll move it to the end of the file at the very end 
-
 ```{r, include=FALSE}
 ## NOTE! THIS RUNS AND DOES NOT SHOW IN KNITTED
-#To start, let's read in the cleaned datasets from our last submission:
+# To start, let's read in the cleaned datasets from our last submission:
 teacher_data <- read.csv("TALIS.csv")
 subject_data <- read.csv("subject_data.csv", as.is=TRUE)
 
-#change column names of 10 satisfaction questions to make more readable
-indices <- grep("TT2G46", colnames(teacher_data))[-11]
+# Change column names of 10 satisfaction questions to make more readable
+satcols <- grep("TT2G46", colnames(teacher_data))
+indices <- satcols[satcols != which(colnames(teacher_data) == "TT2G46_avg")]
 colnames(teacher_data)[indices] <- c("sat1", "sat2", "sat3", "sat4", "sat5", "sat6", "sat7", "sat8", "sat9", "sat10")
 names(teacher_data)[names(teacher_data)=="TT2G46_avg"] <- "sat_avg"
 
-#Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
-teacher_data <- teacher_data[, -24]
+# Column "TT2G15" contains no useful data, since it's all NAs, so we're going to remove it
+# Column "ID" is no longer necessary, was used for making the subject dataset
+teacher_data <- teacher_data[,-which(names(teacher_data) %in% c("TT2G15","ID"))]
 
-#Column "ID" is no longer necessary, was used for making the subject dataset
-teacher_data <- teacher_data[, -36]
-
-#change some of the subject names (one of the comments in our dataset submission was that they weren't clear):
+# Change some of the subject names (one of the comments in our dataset submission was that they weren't clear):
 names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
 names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 
-#We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
+# We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
 teacher_data$num_subjects <- rowSums(teacher_data[,24:35], na.rm=TRUE)
 
-#We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
-teacher_data <- teacher_data[, -13]
+# We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
+teacher_data <- teacher_data[, -which(names(teacher_data) %in% c("satisfaction"))]
+
 # A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
 
 teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
@@ -60,9 +58,7 @@ teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("N
 
 teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"), ordered=TRUE)
 
-
-#We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
-
+# We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
 
 # Brazil, Chile
 teacher_data$region[teacher_data$country %in% c("BRA", "CHL")] <- "South America"
@@ -78,7 +74,6 @@ teacher_data$region[teacher_data$country %in%
 # Spain, Croatia, Italy, Latvia,  Portugal,  Serbia, 
 teacher_data$region[teacher_data$country %in% 
                         c("ESP", "HRV", "ITA", "LVA", "PRT", "SRB")] <- "Southern Europe"
-
 
 # Belgium,  France, Netherlands
 teacher_data$region[teacher_data$country %in% 
