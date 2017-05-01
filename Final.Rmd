@@ -20,11 +20,14 @@ library(reshape2)
 library(FNN)
 library(grid)
 library(gridExtra)
+<<<<<<< HEAD
+=======
+library(leaps)
+>>>>>>> ac2be225c08511c7caf95683d83ee3e5025ec933
 library(GGally)
 ```
 
 ```{r, include=FALSE}
-## NOTE! THIS RUNS AND DOES NOT SHOW IN KNITTED
 # To start, let's read in the cleaned datasets from our last submission:
 teacher_data <- read.csv("TALIS.csv")
 subject_data <- read.csv("subject_data.csv", as.is=TRUE)
@@ -44,30 +47,33 @@ names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
 names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 
 # We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
-subjcols <- c(24:35)
-teacher_data$num_subjects <- rowSums(teacher_data[,subjcols], na.rm=TRUE)
+subject_names <- c("R_WR_Lit", "Math", "Science", "Soc_Studies", "Modern_Lang", "Ancient_Lang", "Tech", "Arts", "PE", "Rel_Ethics", "Practical", "Other")
+subject_indices <- c(which(colnames(teacher_data) %in% subject_names))
 
-# We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
+teacher_data$num_subjects <- rowSums(teacher_data[,subject_indices], na.rm=TRUE)
+
+# We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and we are instead going to use the average of the 10 satisfaction questions, as a result, let's remove the teacher satisfaction variable:
 teacher_data <- teacher_data[, -which(names(teacher_data) %in% c("satisfaction"))]
 
 # A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
 teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
 teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
-
 teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("No positive change", "A small change", "A moderate change", "A large change"), ordered=TRUE)
-
 teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"), ordered=TRUE)
 
 # We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
 
 # Brazil, Chile
 teacher_data$region[teacher_data$country %in% c("BRA", "CHL")] <- "South America"
+
 # Canada, Mexico, United States
 teacher_data$region[teacher_data$country %in% c("CAB", "MEX", "USA")] <- "North America"
+
 #  Bulgaria, Czech Republic,  Poland,  Romania, Russia, Slovak Republic
 teacher_data$region[teacher_data$country %in% 
                         c("BGR", "CZE", "POL", "ROU", "RUS", "SVK")] <- "Eastern Europe"
+
 # Denmark, England, Estonia, Finland,   Latvia,  Norway, Sweden
 teacher_data$region[teacher_data$country %in% 
                         c("DNK", "ENG",  "EST", "FIN", "LVA", "NOR", "SWE")] <- "Northern Europe"
@@ -79,10 +85,13 @@ teacher_data$region[teacher_data$country %in%
 # Belgium,  France, Netherlands
 teacher_data$region[teacher_data$country %in% 
                         c("BFL", "FRA","NLD")] <- "Western Europe"
+
 # Abu Dhabi, Georgia, Israel                     
 teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "East Mediterranean"
+
 # Australia, China, Japan, South Korea, Malaysia, New Zealand, Singapore
 teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
+
 teacher_data$region <- as.factor(teacher_data$region)
 ```
 # Introduction
@@ -154,6 +163,7 @@ p3 <- teacher_data %>% filter(!is.na(sat_avg)) %>% ggplot(aes(x=reorder(region, 
 ```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
 grid.arrange(p1, p2, ncol=2)
 ```
+
 ```{r, echo=FALSE, fig.height=2.25, fig.width=9}
 p3
 ```
@@ -170,50 +180,115 @@ To address our first research question, and to try to identify which variables a
 
 #### Linear Regression Analysis
 
+
 (1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
 (2) We are going to use forward, backward and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
 
 ```{r}
-sat_indices <- grep("sat", names(teacher_data))[-11]
+# In order to have easier control over which predictors to use in our model, below we create several lists of indices that we might want to include or exclude as a group
+
+# We don't want to use the 10 satisfaction questions to predict satisfaction, so let's create a list of the indices we need to avoid
+satcols <- grep("sat", colnames(teacher_data))
+sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
+
+subject_names <- c("R_WR_Lit", "Math", "Science", "Soc_Studies", "Modern_Lang", "Ancient_Lang", "Tech", "Arts", "PE", "Rel_Ethics", "Practical", "Other")
+subject_indices <- c(which(colnames(teacher_data) %in% subject_names))
+
 # Some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
 na_cols <- c()
 for(i in 1:ncol(teacher_data)) {
-  if(sum(is.na(teacher_data[,i]))/nrow(teacher_data) > 0.05) {
+  if(sum(is.na(teacher_data[,i]))/nrow(teacher_data) > 0.10) {
     na_cols <- c(na_cols,i)
   }
 }
 
-subject_indices <- c(23:34)
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
-# Let's also remove the subject columns, since we have a column that stores the number of subjects each teacher is teaching
-m1 <- lm(sat_avg ~ ., data=teacher_data[,-c(na_cols, sat_indices, subject_indices)])
+x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
+# Try model with country variable and not region
+m1 <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
+# Try model with region variable and not country
+m2 <- lm(I(sat_avg^2) ~ ., data=x[,-which(names(x) %in% c("region"))])
 summary(m1)
+summary(m2)
 ```
+
+Let's make sure that the assumptions for linear regression hold.
 
 Using stepwise regression
 ```{r}
-# remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
-#also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
-x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
-m.full <- lm(sat_avg ~., data=x)
+# Remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
+# Also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
+m.full <- lm(sat_avg ~., data=x[,-which(names(x) %in% c("region"))])
 m.empty <- lm(sat_avg ~ 1, data=x)
 ```
 
 Forward, backwards, and both
 ```{r}
-m.forward <- step(m.empty, scope=list(upper=m.full),
+# With AIC
+m.forward.aic <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="forward", trace=FALSE)
-m.backward <- step(m.full, scope=list(lower=m.empty),
+m.backward.aic <- step(m.full, scope=list(lower=m.empty),
                   data=x, direction="backward", trace=FALSE)
-m.both <- step(m.empty, scope=list(upper=m.full),
+m.both.aic <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="both", trace=FALSE)
+
+# With BIC
+m.forward.bic <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="forward", trace=FALSE, k=log(nrow(x)))
+m.backward.bic <- step(m.full, scope=list(lower=m.empty),
+                  data=x, direction="backward", trace=FALSE, k=log(nrow(x)))
+m.both.bic <- step(m.empty, scope=list(upper=m.full),
+                  data=x, direction="both", trace=FALSE, k=log(nrow(x)))
 ```
+
+We can see from the results above, that with AIC as the criterion, all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
+
+Using the BIC criterion, all three models ended up using all of the same predictors as the AIC stepwise models, except without prep_A.
+
+```{r}
+# m3 <- regsubsets(sat_avg ~ ., data=x, nbest=1, method="exhaustive")
+```
+
 
 #### One-way ANOVA Test
 
-Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, prep_C, and region.
+Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
+
+```{r}
+# Collab vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(collab), data=teacher_data))
+teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(y=sat_avg, x=as.numeric(collab))) + geom_point() + xlab("Collab") + ylab("Sat")
+
+# prep_A vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(prep_A), data=teacher_data))
+teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(y=sat_avg, x=as.numeric(prep_A))) + geom_point() + xlab("prep_A") + ylab("Sat")
+
+# prep_B vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(prep_B), data=teacher_data))
+teacher_data %>% filter(!is.na(prep_B)) %>% ggplot(aes(y=sat_avg, x=as.numeric(prep_B))) + geom_point() + xlab("prep_B") + ylab("Sat")
+
+# prep_C vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(prep_C), data=teacher_data))
+teacher_data %>% filter(!is.na(prep_C)) %>% ggplot(aes(y=sat_avg, x=as.numeric(prep_C))) + geom_point() + xlab("prep_C") + ylab("Sat")
+
+# gender vs Sat_avg
+anova(lm(sat_avg ~ gender, data=teacher_data))
+teacher_data %>% filter(!is.na(gender)) %>% ggplot(aes(y=sat_avg, x=gender)) + geom_point() + xlab("Gender") + ylab("Sat")
+
+# age vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(age), data=teacher_data))
+teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(y=sat_avg, x=as.numeric(age))) + geom_point() + xlab("Age") + ylab("Sat")
+
+# total_time vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(total_time), data=teacher_data))
+teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(y=sat_avg, x=as.numeric(total_time))) + geom_point() + xlab("Total Time Working") + ylab("Sat")
+
+# years_teacher vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(years_teacher), data=teacher_data))
+teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(y=sat_avg, x=as.numeric(years_teacher))) + geom_point() + xlab("Years As a Teacher") + ylab("Sat")
+```
 
 #### Logistic Regression Analysis
 
@@ -226,17 +301,29 @@ For Logistic Regression we will:
 
 Then we will analyze the models from (1) and (2) to try to determine which columns are the best predictors of whether or not teachers are satisfied.  We will then compare these results to the results we got from linear regression.
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 teacher_data$isSatisfied <- teacher_data$sat_avg > 2.5
 # remove NA rows, since they don't contain meaningful information for us.
 teacher_data <- teacher_data[!is.na(teacher_data$sat_avg),]
 # remove SAT questions, since they obviously explain our predictor variable
-sat_indices <- grep("sat", names(teacher_data))[-12]
-subject_indices <- c(24:35)
+satcols <- grep("sat", colnames(teacher_data))
+sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
+subject_indices <- c(which(colnames(teacher_data) == "R_WR_Lit"),
+	which(colnames(teacher_data) == "Math"),
+	which(colnames(teacher_data) == "Science"),
+	which(colnames(teacher_data) == "Soc_Studies"),
+	which(colnames(teacher_data) == "Modern_Lang"),
+	which(colnames(teacher_data) == "Ancient_Lang"),
+	which(colnames(teacher_data) == "Tech"),
+	which(colnames(teacher_data) == "Arts"),
+	which(colnames(teacher_data) == "PE"),
+	which(colnames(teacher_data) == "Rel_Ethics"),
+	which(colnames(teacher_data) == "Practical"),
+	which(colnames(teacher_data) == "Other"))
 teacher_data <- teacher_data[, -c(sat_indices, subject_indices)]
-# don't use country
-teacher_data <- teacher_data[,-1]
-# split into train and test
+# Don't use country
+teacher_data <- teacher_data[,-which(colnames(teacher_data) == "country")]
+# Split into train and test
 set.seed(365)
 train_indices <- sample(nrow(teacher_data), .8 * nrow(teacher_data))
 train <- na.omit(teacher_data[train_indices,])
@@ -249,8 +336,7 @@ mean(p1.preds != test$isSatisfied, na.rm = TRUE)
 fake <- sample(test$isSatisfied, length(test$isSatisfied), replace=TRUE)
 mean(fake != test$isSatisfied, na.rm = TRUE)
 
-knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
-
+# knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
 ```
 
 ### Analysis for Research Question 2
@@ -266,19 +352,89 @@ To address our second research question, and try to identify the differences acr
 p3
 ```
 
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly. These variables are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher. We will not, however, talk about country because of the obvious correlation between that and region. We will also not talk about gender, as this is not a scale in the dataset.
+
+```{r}
+# Collab plot
+teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
+
+# prep_A plot
+teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_A), median), y=as.numeric(prep_A))) + geom_boxplot() + xlab("Region") + ylab("prep_A")
+
+# prep_B plot
+teacher_data %>% filter(!is.na(prep_B)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_B), median), y=as.numeric(prep_B))) + geom_boxplot() + xlab("Region") + ylab("prep_B")
+
+# prep_C plot
+teacher_data %>% filter(!is.na(prep_C)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_C), median), y=as.numeric(prep_C))) + geom_boxplot() + xlab("Region") + ylab("prep_C")
+
+# age plot
+teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
+
+# total_time plot
+teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
+
+# years_teacher plot
+teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
+```
+
 (3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
 ```{r}
-# Template code for (2) -- TODO: switch collab with predictive factors after found:
-p4 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
-p4
+# Check which variables have a significant correlation with region
+anova(lm(as.numeric(collab) ~ region, data=teacher_data))
+anova(lm(as.numeric(prep_A) ~ region, data=teacher_data))
+anova(lm(as.numeric(prep_B) ~ region, data=teacher_data))
+anova(lm(as.numeric(prep_C) ~ region, data=teacher_data))
+anova(lm(as.numeric(age) ~ region, data=teacher_data))
+anova(lm(as.numeric(total_time) ~ region, data=teacher_data))
+anova(lm(as.numeric(years_teacher) ~ region, data=teacher_data))
+```
 
-# Template code for regression of (3) TODO: switch collab with predictive factors after found:
+It looks like all of the variables vary across regions.
+
+```{r}
+# Collab and region LM
 summary(lm(sat_avg ~ region*as.numeric(collab), data=teacher_data))
 
-# Plot code for (3) TODO: switch collab with predictive factors after found:
+# Collab and region plot
 teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(collab), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Collab") + ylab("Sat") + facet_wrap(~region)
+
+# prep_A and region LM
+summary(lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data))
+
+# prep_A and region plot
+teacher_data %>% filter(!is.na(as.numeric(prep_A))) %>% ggplot(aes(x=as.numeric(prep_A), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_A") + ylab("Sat") + facet_wrap(~region)
+
+# prep_B and region LM
+summary(lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data))
+
+# prep_B and region plot
+teacher_data %>% filter(!is.na(as.numeric(prep_B))) %>% ggplot(aes(x=as.numeric(prep_B), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_B") + ylab("Sat") + facet_wrap(~region)
+
+# prep_C and region LM
+summary(lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data))
+
+# prep_C and region plot
+teacher_data %>% filter(!is.na(as.numeric(prep_C))) %>% ggplot(aes(x=as.numeric(prep_C), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_C") + ylab("Sat") + facet_wrap(~region)
+
+# age and region LM
+summary(lm(sat_avg ~ region*as.numeric(age), data=teacher_data))
+
+# age and region plot
+teacher_data %>% filter(!is.na(as.numeric(age))) %>% ggplot(aes(x=as.numeric(age), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Age") + ylab("Sat") + facet_wrap(~region)
+
+# total_time and region LM
+summary(lm(sat_avg ~ region*as.numeric(total_time), data=teacher_data))
+
+# total_time and region plot
+teacher_data %>% filter(!is.na(as.numeric(total_time))) %>% ggplot(aes(x=as.numeric(total_time), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Total Time Working") + ylab("Sat") + facet_wrap(~region)
+
+# years_working and region LM
+# years_teacher and region LM
+summary(lm(sat_avg ~ region*as.numeric(years_teacher), data=teacher_data))
+
+# years_teacher and region plot
+teacher_data %>% filter(!is.na(as.numeric(years_teacher))) %>% ggplot(aes(x=as.numeric(years_teacher), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Years Working As Teacher") + ylab("Sat") + facet_wrap(~region)
 ```
 
 (1) Indeed, at least visually, there seems to be some discrepancy in the level of teacher satisfaction across regions (e.g. the median and both quartiles of Teacher Satisfaction for North America are higher than those of Eastern Europe).
