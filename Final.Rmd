@@ -183,6 +183,17 @@ To address our first research question, and to try to identify which variables a
 (3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
 
 ```{r}
+## added a small plot of numerical variables against sat_avg, in case we want justification for squaring something (I got improvements in r^2 when squaring total_time and years_teacher)
+teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
+  gather(-sat_avg, -gender, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = sat_avg, color = gender)) +
+    geom_point(alpha=0.05) +
+    facet_wrap(~ var, scales = "free") +
+    theme_bw()
+```
+
+
+```{r}
 # In order to have easier control over which predictors to use in our model, below we create several lists of indices that we might want to include or exclude as a group
 
 # We don't want to use the 10 satisfaction questions to predict satisfaction, so let's create a list of the indices we need to avoid
