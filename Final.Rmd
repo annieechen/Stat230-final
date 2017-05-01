@@ -25,7 +25,6 @@ library(GGally)
 ```
 
 ```{r, include=FALSE}
-## NOTE! THIS RUNS AND DOES NOT SHOW IN KNITTED
 # To start, let's read in the cleaned datasets from our last submission:
 teacher_data <- read.csv("TALIS.csv")
 subject_data <- read.csv("subject_data.csv", as.is=TRUE)
@@ -45,21 +44,12 @@ names(teacher_data)[names(teacher_data) == "For_Lang"] <- "Modern_Lang"
 names(teacher_data)[names(teacher_data) == "Gk_Ln"] <- "Ancient_Lang"
 
 # We also thought it might be useful to have a variable that indicates the number of subjects a given teacher teaches, so let's add it below:
-subjcols <- c(which(colnames(teacher_data) == "R_WR_Lit"),
-	which(colnames(teacher_data) == "Math"),
-	which(colnames(teacher_data) == "Science"),
-	which(colnames(teacher_data) == "Soc_Studies"),
-	which(colnames(teacher_data) == "Modern_Lang"),
-	which(colnames(teacher_data) == "Ancient_Lang"),
-	which(colnames(teacher_data) == "Tech"),
-	which(colnames(teacher_data) == "Arts"),
-	which(colnames(teacher_data) == "PE"),
-	which(colnames(teacher_data) == "Rel_Ethics"),
-	which(colnames(teacher_data) == "Practical"),
-	which(colnames(teacher_data) == "Other"))
-teacher_data$num_subjects <- rowSums(teacher_data[,subjcols], na.rm=TRUE)
+subject_names <- c("R_WR_Lit", "Math", "Science", "Soc_Studies", "Modern_Lang", "Ancient_Lang", "Tech", "Arts", "PE", "Rel_Ethics", "Practical", "Other")
+subject_indices <- c(which(colnames(teacher_data) %in% subject_names))
 
-# We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and were instead going to use the average of the 10 satisfaction questions:
+teacher_data$num_subjects <- rowSums(teacher_data[,subject_indices], na.rm=TRUE)
+
+# We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and we are instead going to use the average of the 10 satisfaction questions, as a result, let's remove the teacher satisfaction variable:
 teacher_data <- teacher_data[, -which(names(teacher_data) %in% c("satisfaction"))]
 
 # A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
@@ -98,6 +88,7 @@ teacher_data$region[teacher_data$country %in% c("AAD", "GEO", "ISR")] <- "East M
 
 # Australia, China, Japan, South Korea, Malaysia, New Zealand, Singapore
 teacher_data$region[teacher_data$country %in% c("AUS", "CSH", "JPN", "KOR", "MYS", "NZL", "SGP")] <- "Western Pacific"
+
 teacher_data$region <- as.factor(teacher_data$region)
 ```
 # Introduction
@@ -201,6 +192,9 @@ ggpairs(teacher_data, cardinality_threshold=NULL)
 satcols <- grep("sat", colnames(teacher_data))
 sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
 
+subject_names <- c("R_WR_Lit", "Math", "Science", "Soc_Studies", "Modern_Lang", "Ancient_Lang", "Tech", "Arts", "PE", "Rel_Ethics", "Practical", "Other")
+subject_indices <- c(which(colnames(teacher_data) %in% subject_names))
+
 # Some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
 na_cols <- c()
 for(i in 1:ncol(teacher_data)) {
@@ -208,19 +202,6 @@ for(i in 1:ncol(teacher_data)) {
     na_cols <- c(na_cols,i)
   }
 }
-
-subject_indices <- c(which(colnames(teacher_data) == "R_WR_Lit"),
-	which(colnames(teacher_data) == "Math"),
-	which(colnames(teacher_data) == "Science"),
-	which(colnames(teacher_data) == "Soc_Studies"),
-	which(colnames(teacher_data) == "Modern_Lang"),
-	which(colnames(teacher_data) == "Ancient_Lang"),
-	which(colnames(teacher_data) == "Tech"),
-	which(colnames(teacher_data) == "Arts"),
-	which(colnames(teacher_data) == "PE"),
-	which(colnames(teacher_data) == "Rel_Ethics"),
-	which(colnames(teacher_data) == "Practical"),
-	which(colnames(teacher_data) == "Other"))
 
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
