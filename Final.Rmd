@@ -20,10 +20,7 @@ library(reshape2)
 library(FNN)
 library(grid)
 library(gridExtra)
-<<<<<<< HEAD
-=======
 library(leaps)
->>>>>>> ac2be225c08511c7caf95683d83ee3e5025ec933
 library(GGally)
 ```
 
