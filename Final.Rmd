@@ -239,26 +239,26 @@ Using stepwise regression
 ```{r}
 # Remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
 # Also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
-m.full <- lm(sat_avg ~., data=x[,-13])
+m.full <- lm(sat_avg ~., data=x[,-which(names(x) %in% c("region"))])
 m.empty <- lm(sat_avg ~ 1, data=x)
 ```
 
 Forward, backwards, and both
 ```{r}
 # With AIC
-m.forward <- step(m.empty, scope=list(upper=m.full),
+m.forward.aic <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="forward", trace=FALSE)
-m.backward <- step(m.full, scope=list(lower=m.empty),
+m.backward.aic <- step(m.full, scope=list(lower=m.empty),
                   data=x, direction="backward", trace=FALSE)
-m.both <- step(m.empty, scope=list(upper=m.full),
+m.both.aic <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="both", trace=FALSE)
 
 # With BIC
-m.forward <- step(m.empty, scope=list(upper=m.full),
+m.forward.bic <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="forward", trace=FALSE, k=log(nrow(x)))
-m.backward <- step(m.full, scope=list(lower=m.empty),
+m.backward.bic <- step(m.full, scope=list(lower=m.empty),
                   data=x, direction="backward", trace=FALSE, k=log(nrow(x)))
-m.both <- step(m.empty, scope=list(upper=m.full),
+m.both.bic <- step(m.empty, scope=list(upper=m.full),
                   data=x, direction="both", trace=FALSE, k=log(nrow(x)))
 ```
 
@@ -273,7 +273,41 @@ Using the BIC criterion, all three models ended up using all of the same predict
 
 #### One-way ANOVA Test
 
-Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, prep_C, and region.
+Based on the predictors that were significant from part (3) above, we will perform one-way ANOVA tests with each the categorical predictors to see if there are statistically different variances in mean `sat_avg` across different categories.  We will also graph these variables against our job satisfaction (sat_avg) variable to get a better idea of the relationship between those predictors and our response variable.  Based on the analysis we've done so far, some potential candidates for predictors are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
+
+```{r}
+# Collab vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(collab), data=teacher_data))
+teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(y=sat_avg, x=as.numeric(collab))) + geom_point() + xlab("Collab") + ylab("Sat")
+
+# prep_A vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(prep_A), data=teacher_data))
+teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(y=sat_avg, x=as.numeric(prep_A))) + geom_point() + xlab("prep_A") + ylab("Sat")
+
+# prep_B vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(prep_B), data=teacher_data))
+teacher_data %>% filter(!is.na(prep_B)) %>% ggplot(aes(y=sat_avg, x=as.numeric(prep_B))) + geom_point() + xlab("prep_B") + ylab("Sat")
+
+# prep_C vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(prep_C), data=teacher_data))
+teacher_data %>% filter(!is.na(prep_C)) %>% ggplot(aes(y=sat_avg, x=as.numeric(prep_C))) + geom_point() + xlab("prep_C") + ylab("Sat")
+
+# gender vs Sat_avg
+anova(lm(sat_avg ~ gender, data=teacher_data))
+teacher_data %>% filter(!is.na(gender)) %>% ggplot(aes(y=sat_avg, x=gender)) + geom_point() + xlab("Gender") + ylab("Sat")
+
+# age vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(age), data=teacher_data))
+teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(y=sat_avg, x=as.numeric(age))) + geom_point() + xlab("Age") + ylab("Sat")
+
+# total_time vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(total_time), data=teacher_data))
+teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(y=sat_avg, x=as.numeric(total_time))) + geom_point() + xlab("Total Time Working") + ylab("Sat")
+
+# years_teacher vs Sat_avg
+anova(lm(sat_avg ~ as.numeric(years_teacher), data=teacher_data))
+teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(y=sat_avg, x=as.numeric(years_teacher))) + geom_point() + xlab("Years As a Teacher") + ylab("Sat")
+```
 
 #### Logistic Regression Analysis
 
