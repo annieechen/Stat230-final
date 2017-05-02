@@ -93,14 +93,13 @@ teacher_data$region <- as.factor(teacher_data$region)
 ```
 # Introduction
 
-This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset.
-Some information about TALIS:
-
-* It aimed to collect information on teaching profession, working conditions, and learning environments of schools
-* One goal was to come up with metrics and information that would enable comparisons across countries
-* It focused on SCED* Level 2 schools (lower secondary schools)
-* At selected schools, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires
-* There are 36 countries in the dataset (some of which are non-English speaking countries). The only country requirement was that participating countries must be industrialized.
+  This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset. This data set was coordinated by the Organization for Economic Cooperation and Development (OECD), an intergovernmental organization of industrialized countries. The TALIS dataset comes from a survey of the teaching workforce that aims to collect information about teaching as a profession, the working conditions of teachers, and the learning environments of schools. Another goal of the TALIS survey was to provide a more global view of education systems, and to produce metrics that could be used to compare education systems from different countries.  
+  TALIS was administered in 2008 and 2013. We will be using the more recent international dataset, from 2013.  It contains answers from teachers from more than 10,000 schools in 36 different countries. It's worth noting that not all of the countries were English speaking, and that the only requirement for each participating country was that it must be industrialized.  The TALIS dataset contains several different files.  The data is split by school type (primary school, secondary school etc).  Although the TALIS dataset contains information from a variety of school types (primary, secondary, etc), the focus of the survey was on lower-secondary schools, and that is the largest data file.  As a result, we are going to focus our analysis on lower-secondary schools.  At each school that was selected to participate, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires.  Our analysis below consists of only the teacher responses, not the responses of the principals, as they were given slightly different questionnaires.
+  The first question we hope to explore in our analysis, is:
+  (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
+  There are several reasons motivating this question.  Education is incredibly important to any countries development and functioning.  It's important that a country can educate it's youth, so that they can participate in society when they are adults.  However, there is a fair amount of diversity across countries with regard to how well the teaching profession is respected, and how well education systems are funded.  As a result, teacher working conditions vary quire a bit.  However, in order to make sure that there are enough teachers, and that they are able to teach their students well, it is important to make sure that teacher satisfaction is at a high enough level.  If teacher satisfaction is too low, it becomes difficult to retain a large enough teaching force, and to attract talented people to the field.  Low teacher satisfaction can also indicate that they are having trouble doing their job well, possibly due to environmental factors out of their control.  For many reasons such as these, teacher satisfaction is a useful metric to observe in any education system.  It's also helpful to understand what kinds of environments keep teachers more satisfied, so that educational systems can encourage and build these types of environments.  Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction, could be helpful information.
+  Our second research question is:
+  (2) How do teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
 
 #### Main Research Questions:
 (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
@@ -116,6 +115,10 @@ Some information about TALIS:
 # Data
 
 Each row of the dataset is for a single teacher's response to the questionnaire (There are 117876 rows).  Each column in the dataset corresponds to either a particular question in the questionnaire, or a summary variable for a section of the questionnaire.
+
+The dataset contains a column for each individual question on the questionnaire, and summary columns for overall sections. For example, there are individual columns for questions such as “The advantages of this profession clearly outweigh the disadvantages” and “I would recommend my school as a good place to work”, but also an overall column summing up all the scores for the teacher satisfaction questions. Each row of the dataset is for a different teacher’s responses to the questionnaire.  Almost all of the questions in the questionnaire were multiple choice or numerical input questions.  
+
+The dataset contains a column for each individual question on the questionnaire, and summary columns for overall sections. There are columns concerning employment status, personal information/background, time spent, professional development, efficacy and amount of feedback, outlook about the school, school climate, overall job satisfaction, and much more. Each row of the dataset is for a different teacher’s responses to the questionnaire.  Almost all of the questions in the questionnaire were multiple choice or numerical input questions.  
 
 The variables we are using are:
 
