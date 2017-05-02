@@ -1,5 +1,5 @@
 ---
-title: "Final Project""
+title: "Final Project"
 author: "Veena Advani, Annie Chen, Robert Tung"
 date: "Due 4/28/2017"
 output: html_document
@@ -207,12 +207,12 @@ Although our earlier plot of satisfaction against the degree of collaboration at
 
 ```{r}
 ## added a small plot of numerical variables against sat_avg, in case we want justification for squaring something (I got improvements in r^2 when squaring total_time and years_teacher)
-teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
-  gather(-sat_avg, -gender, key = "var", value = "value") %>%
-  ggplot(aes(x = value, y = sat_avg, color = gender)) +
-    geom_point(alpha=0.05) +
-    facet_wrap(~ var, scales = "free") +
-    theme_bw()
+#teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
+#  gather(-sat_avg, -gender, key = "var", value = "value") %>%
+#  ggplot(aes(x = value, y = sat_avg, color = gender)) +
+#    geom_point(alpha=0.05) +
+#    facet_wrap(~ var, scales = "free") +
+#    theme_bw()
 ```
 
 
