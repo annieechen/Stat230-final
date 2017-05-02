@@ -171,11 +171,34 @@ p3
 
 **Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our second research question, which revolves around variations in sat_avg and other variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore additional plots like this one, but with other variables, in our full analysis.
 
+### Removal of Strange Values
+QUESTION: should we do this? strange years_teacher values, vs age, or in general, total_time spent per week etc.  Are these all rows we should get rid of???
+
+Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to remove these datapoints, since they are likely unreliable.
+
+The total time spent on teaching related activities per week:
+```{r}
+teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
+```
+We can see from this histogram, that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day), and another 15 hours of related teaching activities on the weekend, they would be at 90 hours in a week.  Although it's possible teachers at boarding schools might be able to claim this kind of time comittment, other than that it's highly improbable.  We can see that there's a pretty big drop off in the histogram after 60 hours a week.  Given that greater than 90 hours a week seems almost impossible to do, let's see how many teachers reported such a statistic
+```{r}
+length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),]$total_time)
+```
+This is not a huge amount of entries given the total size of the dataset, so we are going to remove them.
+QUESTION: pretty large difference between doing >= 90, and 90, remove an additional 500 values roughly if you do >=90.
+```{r}
+teacher_data <- teacher_data[teacher_data$total_time < 90,]
+```
+
 ### Analysis for Research Question 1
 
 To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
 
 #### Linear Regression Analysis
+Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look at a matrix of plots of the data, before diving into any linear regression models:
+```{r}
+#ggpairs(teacher_data)
+```
 
 
 (1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
@@ -201,6 +224,7 @@ for(i in 1:ncol(teacher_data)) {
     na_cols <- c(na_cols,i)
   }
 }
+```
 
 ## added a small plot of numerical variables against sat_avg, in case we want justification for squaring something (I got improvements in r^2 when squaring total_time and years_teacher)
 teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
@@ -213,16 +237,77 @@ teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
 
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
 # Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
+Dataset for Linear Regression Model:
+For our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
+```{r}
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
+```
+
+Now, we are interested in how geography impacts teacher satisfaction, however we have two different geography variables.  We can't include both in the model, as they are linearly dependent, and R will only find a set of coefficients for one of the two variables if we put both in the model.  Because of this, let's try both and compare the results:
+
+Linear model using country:
+```{r}
 # Try model with country variable and not region
-m1 <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
+m_country <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
+summary(m_country)
+```
+
+Linear model using region:
+```{r}
 # Try model with region variable and not country
-m2 <- lm(I(sat_avg^2) ~ ., data=x[,-which(names(x) %in% c("region"))])
+m_region <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("country"))])
+summary(m_region)
+```
+
+We can see from the two summaries, that a large amount of the country categories are significant, and all of the region categories are also significant.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1981.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model.
+
+We can also see that train_stat was not significant in either of the models, so let's also remove that from future models.
+
+```{r}
+#NOTE: SHOULD REALLY RECREATE ORIGINAL X, MIGHT GET SOME OLD DATA BACK...
+x.new <- x[, -which(names(x) %in% c("region", "train_stat"))]
+```
+
+Now let's see if all of the variables we have in our dataset are normally distributed, or if some transformations might be helpful:
+
+```{r}
+#QUESTION: What is error I'm getting in second plot?
+#QUESTION: to justify doing transformations on predictors, do you use histogram of predictor, or graph of predictor against repsonse variable?
+x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
+x.new %>% ggplot(aes(x=sat_avg^2)) + geom_histogram(binwidth = 1) + labs(title="Histogram of Teacher Satisfaction Squared", x="Teacher Satisfaction Squared (low to high)", y="Count")
+```
+We can see from the two histograms above, that the histogram of sat_avg looks a little bit closer to a normal distribution if we square it.
+
+```{r}
+#QUESTION: is there a way to do a histogram of all the variables in x?
+x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
+x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
+x.new %>% ggplot(aes(x=log(years_teacher))) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
+```
+We can see from the histograms of years spent teaching that the distribution has many values clumped on the lower end of the x values.  The histogram of the log transformation of years spent teaching, however, also does not look like a normal distribution.  However, it might be worth trying in the linear model.  Let's see if squareing sat_avg, or taking the log transform of years_teacher improves the model.
+
+```{r}
+m1 <- lm(I(sat_avg^2) ~ ., data=x.new)
 summary(m1)
+```
+
+Squaring our response variable did cause a slight improvement in R-squared, from 0.2449 to 0.2464.
+QUESTION: is this enough of an improvement to keep the transformations?
+
+Now let's see if taking the log of years_teacher helps.
+
+```{r}
+m2 <- lm(I(sat_avg^2) ~ country + gender + age + log(years_teacher + 0.0001) + prep_A + prep_B + prep_C + total_time + collab + num_subjects, data=x.new)
 summary(m2)
 ```
 
-Let's make sure that the assumptions for linear regression hold.
+We can see from this summary that the log transformation of the years_teacher predictor also produced an increase in the R-squared variable, moving it from 0.2464 to 0.2474.
+
+Lastly, let's make sure that the assumptions for linear regression hold.
+```{r}
+#QUESTION: WHAT IS THIS ERROR?
+plot(m2)
+```
 
 Using stepwise regression
 ```{r}
@@ -348,6 +433,8 @@ mean(fake != test$isSatisfied, na.rm = TRUE)
 
 # knn.preds <- knn(train[,1:13], na.omit(test[,1:13]), train$isSatisfied, k=10)
 ```
+
+NOTE: need conclusion to this section!!!
 
 ### Analysis for Research Question 2
 
