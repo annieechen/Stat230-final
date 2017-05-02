@@ -180,7 +180,7 @@ The total time spent on teaching related activities per week:
 ```{r}
 teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
 ```
-We can see from this histogram, that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day), and another 15 hours of related teaching activities on the weekend, they would be at 90 hours in a week.  And this type of schedule is highly improbably to begin with.  We can see that there's a pretty big drop off in the histogram after 60 hours a week.  Given that greater than 90 hours a week seems almost impossible to do, let's see how many teachers reported such a statistic
+We can see from this histogram, that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day), and another 15 hours of related teaching activities on the weekend, they would be at 90 hours in a week.  Although it's possible teachers at boarding schools might be able to claim this kind of time comittment, other than that it's highly improbable.  We can see that there's a pretty big drop off in the histogram after 60 hours a week.  Given that greater than 90 hours a week seems almost impossible to do, let's see how many teachers reported such a statistic
 ```{r}
 length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),]$total_time)
 ```
@@ -195,7 +195,7 @@ teacher_data <- teacher_data[teacher_data$total_time < 90,]
 To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
 
 #### Linear Regression Analysis
-Before running linear regression, let's first look at a matrix of plots of the data:
+Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look at a matrix of plots of the data, before diving into any linear regression models:
 ```{r}
 #ggpairs(teacher_data)
 ```
@@ -270,6 +270,7 @@ Now let's see if all of the variables we have in our dataset are normally distri
 
 ```{r}
 #QUESTION: What is error I'm getting in second plot?
+#QUESTION: to justify doing transformations on predictors, do you use histogram of predictor, or graph of predictor against repsonse variable?
 x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
 x.new %>% ggplot(aes(x=sat_avg^2)) + geom_histogram(binwidth = 1) + labs(title="Histogram of Teacher Satisfaction Squared", x="Teacher Satisfaction Squared (low to high)", y="Count")
 ```
@@ -289,7 +290,7 @@ summary(m1)
 ```
 
 Squaring our response variable did cause a slight improvement in R-squared, from 0.2449 to 0.2464.
-QUESTION: is this enough to keep it?
+QUESTION: is this enough of an improvement to keep the transformations?
 
 Now let's see if taking the log of years_teacher helps.
 
@@ -336,6 +337,8 @@ m.both.bic <- step(m.empty, scope=list(upper=m.full),
 We can see from the results above, that with AIC as the criterion, all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
 
 Using the BIC criterion, all three models ended up using all of the same predictors as the AIC stepwise models, except without prep_A.
+
+NOTE: need conclusion to this section!!!
 
 ### Analysis for Research Question 2
 
