@@ -475,3 +475,4 @@ summary(m_countryonly)
 ```
 0.08257/0.2474 is roughly 33.3%, therefore the country variable alone accounts for 33% of the variability that our final model in Part 1 was able to explain.
 
+# Conclusion:
