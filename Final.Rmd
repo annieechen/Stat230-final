@@ -174,6 +174,22 @@ p3
 ### Removal of Strange Values
 QUESTION: should we do this? strange years_teacher values, vs age, or in general, total_time spent per week etc.  Are these all rows we should get rid of???
 
+Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to remove these datapoints, since they are likely unreliable.
+
+The total time spent on teaching related activities per week:
+```{r}
+teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
+```
+We can see from this histogram, that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day), and another 15 hours of related teaching activities on the weekend, they would be at 90 hours in a week.  And this type of schedule is highly improbably to begin with.  We can see that there's a pretty big drop off in the histogram after 60 hours a week.  Given that greater than 90 hours a week seems almost impossible to do, let's see how many teachers reported such a statistic
+```{r}
+length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),]$total_time)
+```
+This is not a huge amount of entries given the total size of the dataset, so we are going to remove them.
+QUESTION: pretty large difference between doing >= 90, and 90, remove an additional 500 values roughly if you do >=90.
+```{r}
+teacher_data <- teacher_data[teacher_data$total_time < 90,]
+```
+
 ### Analysis for Research Question 1
 
 To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
