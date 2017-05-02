@@ -304,7 +304,7 @@ We can see from this summary that the log transformation of the years_teacher pr
 Lastly, let's make sure that the assumptions for linear regression hold.
 ```{r}
 #QUESTION: WHAT IS THIS ERROR?
-plot(m2)
+#plot(m2)
 ```
 
 Using stepwise regression
@@ -342,7 +342,7 @@ NOTE: need conclusion to this section!!!
 
 ### Analysis for Research Question 2
 
-To address our second research question, and try to identify the differences across different regions for teacher job satisfaction, we are going to try several techniques.
+To address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors, we are going to try several techniques.
 
 #### Plots
 
@@ -353,7 +353,7 @@ To address our second research question, and try to identify the differences acr
 p3
 ```
 
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly. These variables are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher. We will not, however, talk about country because of the obvious correlation between that and region. We will also not talk about gender, as this is not a scale in the dataset.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly. These variables are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher. We will not, however, talk about country because of the obvious correlation between that and region. 
 
 ```{r}
 # Collab plot
@@ -376,6 +376,10 @@ teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as
 
 # years_teacher plot
 teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
+
+#gender plot
+#NOTE: fix margins
+mosaicplot(region ~ gender, data=teacher_data, las=2)
 ```
 
 (3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
@@ -463,3 +467,11 @@ We will also see if there are statistically significant variances across regions
 mcollabreg <- lm(collab ~ region, data=teacher_data)
 anova(msatreg)
 ```
+
+Let's see how much of the R-squared in our model from part 1 was due to just the country predictor:
+```{r}
+m_countryonly <- lm(I(sat_avg^2) ~ country, data=x.new)
+summary(m_countryonly)
+```
+0.08257/0.2474 is roughly 33.3%, therefore the country variable alone accounts for 33% of the variability that our final model in Part 1 was able to explain.
+
