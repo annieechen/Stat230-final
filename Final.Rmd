@@ -22,6 +22,7 @@ library(grid)
 library(gridExtra)
 library(leaps)
 library(GGally)
+library(ggmosaic)
 ```
 
 ```{r, include=FALSE}
@@ -203,8 +204,8 @@ We can see that there are points above the red line, which are teachers who repo
 
 ```{r}
 age_start <- teacher_data$age - teacher_data$years_teacher
-nrow(teacher_data[age_start <= 11,])
-teacher_data <- teacher_data[which(age_start >= 11),]
+nrow(teacher_data[age_start <= 15,])
+teacher_data <- teacher_data[which(age_start >= 15),]
 ```
 
 ### Analysis for Research Question 1
@@ -244,12 +245,14 @@ for(i in 1:ncol(teacher_data)) {
 ```
 
 ## added a small plot of numerical variables against sat_avg, in case we want justification for squaring something (I got improvements in r^2 when squaring total_time and years_teacher)
+```{r}
 teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
   gather(-sat_avg, -gender, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = sat_avg, color = gender)) +
     geom_point(alpha=0.05) +
     facet_wrap(~ var, scales = "free") +
     theme_bw()
+```
 
 
 # For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
@@ -368,12 +371,20 @@ As we stated above, visually, while all median values for sat_avg hover around t
 
 (2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly. These variables are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher. We will not, however, talk about country because of the obvious correlation between that and region.
 
-*note, I don't think it makes sense to plot by decreasing median here, because then you have to see which regions are switching manually. Perhaps we should keep them in alphabetical order or color code or something? Although actually without na.omit, the reordering doesn't work anyway*
 
 ```{r}
-# Collab plot
-c1 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
+# first mosaic plot by region
 
+teacher_data %>% filter(!is.na(collab)) %>% ggplot() + 
+   geom_mosaic(aes(x = product(collab, region), fill=factor(collab)), na.rm=TRUE) + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+
+```
+
+
+# Collab plot
+teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
+
+ 
 # prep_A plot
 c2 <- teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_A), median), y=as.numeric(prep_A))) + geom_boxplot() + xlab("Region") + ylab("prep_A")
 
