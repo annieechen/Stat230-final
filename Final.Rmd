@@ -291,34 +291,20 @@ Now let's see if all of the variables we have in our dataset are normally distri
 #QUESTION: What is error I'm getting in second plot?
 #QUESTION: to justify doing transformations on predictors, do you use histogram of predictor, or graph of predictor against repsonse variable?
 x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
-x.new %>% ggplot(aes(x=sat_avg^2)) + geom_histogram(binwidth = 1) + labs(title="Histogram of Teacher Satisfaction Squared", x="Teacher Satisfaction Squared (low to high)", y="Count")
 ```
-We can see from the two histograms above, that the histogram of sat_avg looks a little bit closer to a normal distribution if we square it.
+We can see from the histogram of sat_avg above, that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
 
 ```{r}
 #QUESTION: is there a way to do a histogram of all the variables in x?
 x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
 x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
-x.new %>% ggplot(aes(x=log(years_teacher))) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
 ```
-We can see from the histograms of years spent teaching that the distribution has many values clumped on the lower end of the x values.  The histogram of the log transformation of years spent teaching, however, also does not look like a normal distribution.  However, it might be worth trying in the linear model.  Let's see if squareing sat_avg, or taking the log transform of years_teacher improves the model.
+Both of these histograms, although not perfectly normal, also don't have a huge amount of skew.  In fact, the histogram for time spent on reaching related activities has very little skew.  As a result, we probably don't need to transform either of these variables either.
 
+Model without train_stat:
 ```{r}
-m1 <- lm(I(sat_avg^2) ~ ., data=x.new)
-summary(m1)
+
 ```
-
-Squaring our response variable did cause a slight improvement in R-squared, from 0.2449 to 0.2464.
-QUESTION: is this enough of an improvement to keep the transformations?
-
-Now let's see if taking the log of years_teacher helps.
-
-```{r}
-m2 <- lm(I(sat_avg^2) ~ country + gender + age + log(years_teacher + 0.0001) + prep_A + prep_B + prep_C + total_time + collab + num_subjects, data=x.new)
-summary(m2)
-```
-
-We can see from this summary that the log transformation of the years_teacher predictor also produced an increase in the R-squared variable, moving it from 0.2464 to 0.2474.
 
 Lastly, let's make sure that the assumptions for linear regression hold.
 ```{r}
