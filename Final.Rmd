@@ -466,10 +466,9 @@ To address our second research question, and try to identify the differences acr
 p3
 ```
 
+As we stated above, visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). However, we would classify each region's average as "satisfied", as it falls above 2.5
 
-As we stated above, visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). However, we would classify each region's average as "satisfied", as it falls above 2.5hi
-
-(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly. These variables are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher. We will not, however, talk about country because of the obvious correlation between that and region. We will also not talk about gender, as this is not a scale in the dataset.
+(2) We are going to plot each of the predictive factors that were found to be significant in Research Question 1 against region, to see if perhaps the region is affecting these variables and thus affecting satisfaction indirectly. These variables are collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher. We will not, however, talk about country because of the obvious correlation between that and region.
 
 *note, I don't think it makes sense to plot by decreasing median here, because then you have to see which regions are switching manually. Perhaps we should keep them in alphabetical order or color code or something? Although actually without na.omit, the reordering doesn't work anyway*
 
@@ -500,7 +499,6 @@ c7 <- teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(re
 grid.arrange(c1, c2, c3, c4, c5, c6, c7, ncol=3)
 ```
 ```{r}
-plot(teacher_data[teacher_data$region == "Western Europe",]$prep_A)
 
 teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
 
