@@ -190,6 +190,19 @@ QUESTION: pretty large difference between doing >= 90, and 90, remove an additio
 teacher_data <- teacher_data[teacher_data$total_time < 90,]
 ```
 
+We can now take a look at reported age vs years teaching. 
+```{r}
+teacher_data %>% ggplot(aes(x=age, y=years_teacher)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1, color="red") +  geom_abline(intercept = -10, slope=1, color="yellow")+  geom_jitter(shape=".") + labs(title="Reported Age vs Years Teaching", x="Age (years)", y="Years Teaching (years)")
+```
+
+We can see that there are points above the red line, which are teachers who reported they had been teaching longer than they had been alive. Indeed, let's see how many responses reported years that would indicate that they had started teaching before age 11 (points above the yellow line), and remove those values.
+
+```{r}
+age_start <- teacher_data$age - teacher_data$years_teacher
+nrow(teacher_data[age_start <= 11,])
+teacher_data <- teacher_data[which(age_start >= 11),]
+```
+
 ### Analysis for Research Question 1
 
 To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
