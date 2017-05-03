@@ -190,7 +190,7 @@ The total time spent on teaching related activities per week:
 teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
 ```
 
-We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is also another pretty clear dropoff after 60, which also seems like a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time on class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day) due to time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is a physically possible time commitment, it seems highly unlikely.  It is possible that edge cases such as teachers at boarding schools could claim this kind of time comittment, but other than unusual situations like that, more than 90 hours a week seems highly improbable.  Given this fact, let's see how many teachers reported spending 90 hours a week or more on teaching related activities.
+We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is also another pretty clear dropoff after 60 hours/week, which also seems like a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day) due to time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is a physically possible time commitment, it seems highly unlikely.  It is possible that edge cases such as teachers at boarding schools could claim this kind of time comittment, but other than unusual situations like that, more than 90 hours a week seems highly improbable.  Given this fact, let's see how many teachers reported spending 90 hours a week or more on teaching related activities.
 
 ```{r, echo=TRUE}
 length(teacher_data[teacher_data$total_time>=90 & !is.na(teacher_data$total_time),]$total_time)
@@ -250,7 +250,7 @@ for(i in 1:ncol(teacher_data)) {
 ```
 
 Dataset for Linear Regression Model:
-To start, for our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
+To start, for our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our response variable.
 ```{r}
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 ```
@@ -261,15 +261,17 @@ Linear model using country (summary has been left out for space):
 ```{r, echo=TRUE}
 # Try model with country variable and not region
 m_country <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
+summary(m_country)$r.squared
 ```
 
 Linear model using region (summary has been left out for space):
 ```{r, echo=TRUE}
 # Try model with region variable and not country
 m_region <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("country"))])
+summary(m_country)$r.squared
 ```
 
-We can see from the two summaries, that a large amount of the country categories are significant, and all of the region categories are also significant.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1981.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model.
+If one looks at the two summaries, one would see that a large amount of the country categories have significant p-values in the first model, and all of the region categories have significant p-values in the second model.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1981.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model.
 
 We can also see that train_stat was not significant in either of the models, so let's also remove that from future models.
 
@@ -308,7 +310,7 @@ data <- data.frame(prep_A = as.numeric(teacher_data$prep_A),
 cor(data, use = "complete.obs")
 ```
 
-We can see from the correlation matrix above that all three prep questions are pretty correlated.  As a result, let's try creating a single predictor that's the average of all three, in order to indicate their overall feeling of how prepared they were.
+We can see from the correlation matrix above that all three prep questions are pretty correlated, and therefore we shouldn't put all three in our linear model.  As a result, let's try creating a single predictor that's the average of all three, in order to indicate their overall feeling of how prepared they were.
 
 ```{r}
 teacher_data$avg_prep <- apply(data, 1, mean)
@@ -330,18 +332,33 @@ x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="
 We can see from the histogram of sat_avg above, that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
 
 ```{r}
-h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
+h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() +
+  labs(title="Histogram of Time Spent on
+       Teaching Activities",
+       x="Time Spent on Teaching Related Activities",
+       y="Count")
 
-h2 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
+h2 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() +
+  labs(title="Histogram of Years Spent
+       as a Teacher",
+       x="Years of Teaching Experience",
+       y="Count")
 
-h3 <- x.new %>% ggplot(aes(x=collab)) + geom_bar() + labs(title="Collaboration Rating", x="How Collaborative is School Culture", y="Count")
+h3 <- x.new %>% ggplot(aes(x=collab)) + geom_bar() +
+  labs(title="Bar Graph of Collaboration Rating",
+       x="How Collaborative is School Culture",
+       y="Count")
 
-h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() + labs(title="Histogram of # Subjects", x="Number Subjects Taught", y="Count")
+h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() +
+  labs(title="Histogram of The Number
+       of Subjects Taught",
+       x="Number Subjects Taught",
+       y="Count")
 
 grid.arrange(h1, h2, h3, h4, ncol = 2)
 ```
 
-Both of these histograms, although not perfectly normal, also don't have a huge amount of skew.  In fact, the histogram for time spent on reaching related activities has very little skew.  As a result, we probably don't need to transform either of these variables either.
+Three of the plots above, although not perfectly normal, don't have a huge amount of skew.  In fact, the histogram for time spent on teaching related activities has very little skew.  As a result, we probably don't need to transform any of these variables.  The number of subjects histogram does have a lot of skew.  
 
 Model without train_stat (summary removed from report for the sake of space):
 ```{r, echo=TRUE}
@@ -350,7 +367,9 @@ m_final <- lm(sat_avg ~ ., data=x.new)
 
 Before analyzing this model, let's make sure that the assumptions for linear regression hold.
 ```{r, fig.height=5.5}
-plot(m_final)
+par(mfrow=c(1,2))
+plot(m_final, which=1)
+plot(m_final, which=2)
 ```
 
 Now let's analyze the coefficients of the model.  We can see from the summary of m_final, that a lot of the coefficients have statistically significant p-values.  However, this is somewhat expected given the large size of our dataset.  In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, let's look at the magnitude of the coefficients, and the confidence intervals of the coefficients and see how far away they are from zero.
@@ -359,8 +378,15 @@ Now let's analyze the coefficients of the model.  We can see from the summary of
 confint(m_final)
 ```
 
+The largest coefficients in the model in terms of magnitude were: collab.L, countryMEX, countryFIN, countryBFL, countryMYS, and countryNLD.  All the other coefficients had magnitudes that were less than 0.2.
 
-NOTE: need conclusion to this section!!!
+Looking at the confidence intervals of all of the predictors other than country, we can see that the confidence interval for the coefficient of num_subjects is pretty close to zero (it has a range of 0.0017 to 0.0054).  The confidence interval for the coefficient gender is also pretty close to zero, with a range of -0.027 to -0.016.  Two of the confidence intervals closest to zero are for the coefficient of years_teacher (0.00045, 0.00095) and the coefficient for total_time (-0.00063,-0.00031).  Given the small magnitudes of the confidence intervals of these four predictors, they do not seem that significant in predicting teacher satisfaction.
+
+The collab and avg_prep predictors on the other hand, had coefficients with confidence intervals of roughly (0.55, 0.57) and (0.11, 0.12) respectively.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient of a magnitude around 0.5 seems pretty significant.  A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.
+
+Lastly, we can see that several of the countries have coefficients with pretty large magnitudes, and confidence intervals for those coefficients that are pretty far from zero.  For example, the confidence interval for the coefficient for countryMEX is (0.4494836350, 0.4990107641) and for countryFIN is (0.2306808115, 0.2792257572). In fact, 15 countries have coefficients with a magnitude of at least 0.1, and a confidence interval for that coefficient that is also at least 0.1 away from 0.  This suggests that country is also significant in predicting teacher satisfaction.
+
+**Conclusion:** The results of this linear model suggest that teachers perceptions of how collaborative the school culture is, as well as how prepared the teachers feel, are significant predictors for how satisfied teachers are.  Interestingly, although how prepared teachers felt was significant in predicting teacher satisfaction, the degree of teacher training was not.  It is possible that this is because it was a Yes or No question on the survey, and therefore we didn't have more information on the quantity or quality of training that teachers received, whereas teachers were able to rate how prepared they felt in several areas on a scale of "Not at all", "Somewhat", "Well", and "Very well".  Lastly, country was very useful in predicting teacher satisfaction.  This could be due to a variety of reasons, including cultural values and attitudes at work, school legislation and restrictions, funding of schools, the ratio of public to private schools, and the respect that the teaching profession receives, all of which vary between countries.
 
 ### Analysis for Research Question 2
 
