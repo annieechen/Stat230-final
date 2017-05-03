@@ -181,7 +181,7 @@ p3
 
 # Analysis
 
-### Removal of Strange Values
+### Removal of Unusual Values
 
 Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to set these values to NA, since they are likely unreliable.
 
@@ -218,7 +218,7 @@ teacher_data[age_start < 15 & !is.na(age_start), "years_teacher"] <- NA
 
 ### Analysis for Research Question 1
 
-To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
+To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to create a linear model.
 
 #### Linear Regression Analysis
 Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look at a matrix of plots of the data, before diving into any linear regression models:
