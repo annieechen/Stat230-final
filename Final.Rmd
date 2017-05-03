@@ -2,7 +2,9 @@
 title: "Final Project"
 author: "Veena Advani, Annie Chen, Robert Tung"
 date: "Due 4/28/2017"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -345,6 +347,7 @@ We can see from the histogram of sat_avg above, that although it isn't perfectly
 x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
 x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
 ```
+
 Both of these histograms, although not perfectly normal, also don't have a huge amount of skew.  In fact, the histogram for time spent on reaching related activities has very little skew.  As a result, we probably don't need to transform either of these variables either.
 
 New Linear Model:
@@ -542,7 +545,7 @@ summary(m_countryonly)
 
 # Conclusion:
 
-Overall, our models didn't explain very much of the variation in the data at all. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so were pleased with the observations we did find.
+Overall, our models didn't completely explain the variation in the data. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so we were pleased with the observations we did find.
 
 __insert findings here lol__
 
