@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
 ```
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
@@ -381,40 +381,34 @@ As we stated above, visually, while all median values for sat_avg hover around t
 
 
 ```{r}
-# first mosaic plot by region
+# collab plot
+teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, region), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
-teacher_data %>% filter(!is.na(collab)) %>% ggplot() + 
-   geom_mosaic(aes(x = product(collab, region), fill=factor(collab)), na.rm=TRUE) + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
-
-```
-
-```{r}
-# Collab plot
-teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
-
- 
-# prep_A plot
-c2 <- teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_A), median), y=as.numeric(prep_A))) + geom_boxplot() + xlab("Region") + ylab("prep_A")
-
-# prep_B plot
-c3 <- teacher_data %>% filter(!is.na(prep_B)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_B), median), y=as.numeric(prep_B))) + geom_boxplot() + xlab("Region") + ylab("prep_B")
-
-# prep_C plot
-c4 <- teacher_data %>% filter(!is.na(prep_C)) %>% ggplot(aes(x=reorder(region, -as.numeric(prep_C), median), y=as.numeric(prep_C))) + geom_boxplot() + xlab("Region") + ylab("prep_C")
+# prep plot
+teacher_data[, c("prep_A", "prep_B", "prep_C","region")] %>%
+  gather(-region, key = "var", value = "value") %>%
+    mutate(value = factor(value, levels = c("Very Well", "Well", "Somewhat", "Not at all"))) %>%
+  ggplot(aes(x = product(value,region), fill=factor(value))) + geom_mosaic() +
+    theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Prepared the Teacher felt') + guides(fill=guide_legend(title = "Response", reverse=TRUE)) + 
+    facet_wrap(~ var, scales = "free") 
 
 # age plot
-c5 <- teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
+
+teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
 
 # total_time plot
-c6 <- teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
+teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
 
 # years_teacher plot
 
-c7 <- teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
+teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
 
-# plot them all together for less space taken up 
-grid.arrange(c1, c2, c3, c4, c5, c6, c7, ncol=3)
 ```
+
+
+
+
+
 ```{r}
 
 teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
@@ -520,9 +514,24 @@ anova(msatreg)
 ```
 
 
-For the appendix, we should have the data cleaning code "to be complete" according to Piazza
 
-```{r,eval=FALSE}
+
+
+Let's see how much of the R-squared in our model from part 1 was due to just the country predictor:
+```{r}
+m_countryonly <- lm(I(sat_avg^2) ~ country, data=x.new)
+summary(m_countryonly)
+```
+0.08257/0.2474 is roughly 33.4%, therefore the country variable alone accounts for 33% of the variability that our final model in Part 1 was able to explain.
+
+# Conclusion:
+
+## Code Appendix
+
+First, here is the data cleaning code from the Data Exploration Assignment
+
+
+```{r data_cleaning,eval=FALSE}
 # Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
 lower_second_data <- read.spss("SPSS_International/BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
 
@@ -530,10 +539,7 @@ cols <- c("CNTRY", "TT2G01", "TT2G02", "TT2G05B", "TT2G11", "TT2G13A", "TT2G13B"
 
 # We are creating a dataset with the columns from our project proposal, the 10 questions related to job satisfaction, which are columns TT2G46A through TT2G46J, as well as a few additional columns which we also think might be useful
 data <- cbind(lower_second_data[,cols],lower_second_data[,grep("TT2G46", colnames(lower_second_data))], lower_second_data[,grep("TT2G15", colnames(lower_second_data))])
-```
 
-
-```{r,eval=FALSE}
 # Rename some of the columns so that they're easier to work with
 data <- data %>% rename(gender=TT2G01, age=TT2G02, country=CNTRY, years_teacher = TT2G05B, train_stat = TT2G11, prep_A=TT2G13A, prep_B=TT2G13B, prep_C=TT2G13C, total_time=TT2G16, feedback_salary=TT2G30G, collab=TT2G44E, num_students=TT2G38, satisfaction=TJOBSATS)
 
@@ -556,9 +562,7 @@ data <- data %>% rename(R_WR_Lit=TT2G15A, Math=TT2G15B, Science=TT2G15C, Soc_Stu
 
 # Names of columns 
 col_names <- colnames(data)[indices]
-```
 
-```{r,eval=FALSE}
 # Below is just the R code for extracting the subject column
 # This is separated for clarity since it is extensive in and of itself
 
@@ -576,10 +580,8 @@ data_by_subject <- merge(data,temp_by_subj,all.y=T, by = "ID")
 # Clean up unnecessary columns
 data_by_subject <- data_by_subject[,-(c(15:24,26:37,39))]
 data_by_subject <- data_by_subject %>% rename(Subject=variable)
-```
 
-```{r,eval=FALSE}
-#Below is the code used to clean up the satisfaction related questions, as well as a few other columns
+# Below is the code used to clean up the satisfaction related questions, as well as a few other columns
 
 # All ten columns with responses related to job satisfaction are factors, with 4 levels: "Strongly Disagree", "Disagree", "Agree", "Strongly Agree".
 # We are going to convert these 10 columns to numerical data, where the factors get converted to the integers 1, 2, 3, and 4, with 1 corresponding to Strongly Disagree and 4 corresponding to Strongly Agree.
@@ -603,11 +605,8 @@ data$country <- as.factor(trimws(as.character(data$country)))
 data$train_stat <- relevel(data$train_stat, "No")
 ```
 
-Let's see how much of the R-squared in our model from part 1 was due to just the country predictor:
-```{r}
-m_countryonly <- lm(I(sat_avg^2) ~ country, data=x.new)
-summary(m_countryonly)
-```
-0.08257/0.2474 is roughly 33.4%, therefore the country variable alone accounts for 33% of the variability that our final model in Part 1 was able to explain.
 
-# Conclusion:
+*note, we need to figure out how many code chunks in final, and then remove the last one here, because otherwise the datacleaning code will be printed twice 
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+
+```
