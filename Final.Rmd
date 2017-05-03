@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 library("foreign")
-library("dplyr")
 library("tidyr")
 library("countrycode")
 library("rworldmap")
@@ -25,6 +24,8 @@ library(gridExtra)
 library(leaps)
 library(GGally)
 library(ggmosaic)
+library(plyr)
+library("dplyr")
 ```
 
 ```{r, include=FALSE}
@@ -374,6 +375,37 @@ NOTE: need conclusion to this section!!!
 ### Analysis for Research Question 2
 
 To address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors, we are going to try several techniques.
+
+First, we plot some maps to better visualize the teacher satisfaction across countries and by region
+
+```{r}
+# set to ISO codes
+teacher_data$country <- revalue(teacher_data$country, c("AAD"="ARE", "BFL"="BEL","CAB"="CAN","CSH"="CHN","ENG"="GBR"))
+# apparently plyr dependencies will mess things up
+detach(package:plyr)
+country_avg <- teacher_data %>% group_by(country) %>% summarize(mean_satisfaction = mean(sat_avg, na.rm=TRUE))
+library(plyr); library(dplyr)
+#code for map with average teacher satisfaction by country
+sPDF <- joinCountryData2Map(country_avg, joinCode = "ISO3", nameJoinColumn = "country")
+mapCountryData(sPDF, nameColumnToPlot = "mean_satisfaction")
+```
+
+Now, we plot the regions we categorized countries by, which we found using the World Health Organization data.
+
+*Also I hope this will look better once knitted but if not it will need to be tweaked.Sad!*
+
+```{r}
+country_region_pairs <- unique(teacher_data[c("country", "region")])
+#code for map with average teacher satisfaction by country
+sPDF <- joinCountryData2Map(country_region_pairs, joinCode = "ISO3", nameJoinColumn = "country")
+mapParams  <-mapCountryData(sPDF, 
+               nameColumnToPlot = "region",
+               colourPalette="rainbow",
+               addLegend = FALSE,
+               mapTitle = "WHO Regions"
+               )
+do.call(addMapLegendBoxes, c(mapParams, x='bottomleft',title="Region", cex=1.2))
+```
 
 #### Plots
 
