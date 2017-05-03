@@ -249,17 +249,6 @@ for(i in 1:ncol(teacher_data)) {
 }
 ```
 
-
-```{r}
-#teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
-#  gather(-sat_avg, -gender, key = "var", value = "value") %>%
-#  ggplot(aes(x = value, y = sat_avg, color = gender)) +
-#    geom_point(alpha=0.05) +
-#    facet_wrap(~ var, scales = "free") +
-#    theme_bw()
-```
-
-
 Dataset for Linear Regression Model:
 To start, for our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
 ```{r}
