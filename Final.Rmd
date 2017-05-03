@@ -185,14 +185,18 @@ The total time spent on teaching related activities per week:
 ```{r}
 teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
 ```
-We can see from this histogram, that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day), and another 15 hours of related teaching activities on the weekend, they would be at 90 hours in a week.  Although it's possible teachers at boarding schools might be able to claim this kind of time comittment, other than that it's highly improbable.  We can see that there's a pretty big drop off in the histogram after 60 hours a week.  Given that greater than 90 hours a week seems almost impossible to do, let's see how many teachers reported such a statistic
+
+We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is also another pretty clear dropoff after 60, which also seems like a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time on class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day) due to time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is a physically possible time commitment, it seems highly unlikely.  It is possible that edge cases such as teachers at boarding schools could claim this kind of time comittment, but other than unusual situations like that, more than 90 hours a week seems highly improbable.  Given this fact, let's see how many teachers reported spending 90 hours a week or more on teaching related activities.
+
 ```{r}
+length(teacher_data[teacher_data$total_time>=90 & !is.na(teacher_data$total_time),]$total_time)
 length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),]$total_time)
 ```
-This is not a huge amount of entries given the total size of the dataset, so we are going to remove them.
-QUESTION: pretty large difference between doing >= 90, and 90, remove an additional 500 values roughly if you do >=90.
+
+We can see that there are quite a few values of exactly 90, given the fact that the length of the vector where total_time is greater than or equal to 90 is so much longer than the vector that is strictly greater than 90.  Given this fact, we will keep the values of 90, but set all values that are higher than 90 hours a week to NA, since it seems highly unlikely that any teacher is working more than 90 hours a week.
+
 ```{r}
-teacher_data <- teacher_data[teacher_data$total_time < 90,]
+teacher_data[teacher_data$total_time < 90,]$total_time <- NA
 ```
 
 We can now take a look at reported age vs years teaching. 
@@ -228,7 +232,7 @@ Although our earlier plot of satisfaction against the degree of collaboration at
 ```{r}
 # In order to have easier control over which predictors to use in our model, below we create several lists of indices that we might want to include or exclude as a group
 
-# We don't want to use the 10 satisfaction questions to predict satisfaction, so let's create a list of the indices we need to avoid
+# We don't want to use the 10 satisfaction questions to predict sat_avg, since they were used to create the sat_avg predictor, so let's create a list of the indices we need to avoid
 satcols <- grep("sat", colnames(teacher_data))
 sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
 
@@ -246,17 +250,15 @@ for(i in 1:ncol(teacher_data)) {
 
 ## added a small plot of numerical variables against sat_avg, in case we want justification for squaring something (I got improvements in r^2 when squaring total_time and years_teacher)
 ```{r}
-teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
-  gather(-sat_avg, -gender, key = "var", value = "value") %>%
-  ggplot(aes(x = value, y = sat_avg, color = gender)) +
-    geom_point(alpha=0.05) +
-    facet_wrap(~ var, scales = "free") +
-    theme_bw()
+#teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
+#  gather(-sat_avg, -gender, key = "var", value = "value") %>%
+#  ggplot(aes(x = value, y = sat_avg, color = gender)) +
+#    geom_point(alpha=0.05) +
+#    facet_wrap(~ var, scales = "free") +
+#    theme_bw()
 ```
 
 
-# For the linear model with most of the predictors, let's remove the columns with a large number of NA values.  
-# Let's also remove the columns that correspond to the 10 satisfaction questions, since they were used to create the sat_avg variable (our response variable)
 Dataset for Linear Regression Model:
 For our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
 ```{r}
@@ -285,7 +287,8 @@ We can also see that train_stat was not significant in either of the models, so 
 
 ```{r}
 #NOTE: SHOULD REALLY RECREATE ORIGINAL X, MIGHT GET SOME OLD DATA BACK...
-x.new <- x[, -which(names(x) %in% c("region", "train_stat"))]
+x.new <- teacher_data[, -c(sat_indices, na_cols, subject_indices)]
+x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region"))])
 ```
 
 Now let's see if all of the variables we have in our dataset are normally distributed, or if some transformations might be helpful:
