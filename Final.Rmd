@@ -1,9 +1,8 @@
 ---
 title: "Final Project"
 author: "Veena Advani, Annie Chen, Robert Tung"
-date: "Due 4/28/2017"
+date: "Due 5/5/2017"
 output:
-  html_document: default
   word_document: default
 ---
 
@@ -18,7 +17,6 @@ library("countrycode")
 library("rworldmap")
 library(ggplot2)
 library(reshape2)
-library(FNN)
 library(grid)
 library(gridExtra)
 library(leaps)
