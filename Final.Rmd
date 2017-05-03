@@ -340,14 +340,16 @@ x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="
 
 We can see from the histogram of sat_avg above, that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
 
-```{r, warning=FALSE}
-#QUESTION: is there a way to do a histogram of all the variables in x?
-p21 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
-p22 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
-```
+```{r}
+h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
 
-```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
-grid.arrange(p21, p22, ncol=2)
+h2 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
+
+h3 <- x.new %>% ggplot(aes(x=collab)) + geom_bar() + labs(title="Collaboration Rating", x="How Collaborative is School Culture", y="Count")
+
+h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() + labs(title="Histogram of # Subjects", x="Number Subjects Taught", y="Count")
+
+grid.arrange(h1, h2, h3, h4, ncol = 2)
 ```
 
 Both of these histograms, although not perfectly normal, also don't have a huge amount of skew.  In fact, the histogram for time spent on reaching related activities has very little skew.  As a result, we probably don't need to transform either of these variables either.
