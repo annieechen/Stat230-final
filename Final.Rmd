@@ -235,6 +235,9 @@ sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
 subject_names <- c("R_WR_Lit", "Math", "Science", "Soc_Studies", "Modern_Lang", "Ancient_Lang", "Tech", "Arts", "PE", "Rel_Ethics", "Practical", "Other")
 subject_indices <- c(which(colnames(teacher_data) %in% subject_names))
 
+# We might not want to include the three questions about how prepared they felt:
+prep_indices <- grep("prep_", names(teacher_data))
+
 # Some columns also have many more NA values, lets make a list of the columns that have NA values in more than 10% of the data (this ends up being num_students and feedback_salary), that way we can choose whether or not to include them in our linear models
 na_cols <- c()
 for(i in 1:ncol(teacher_data)) {
@@ -256,7 +259,7 @@ for(i in 1:ncol(teacher_data)) {
 
 
 Dataset for Linear Regression Model:
-For our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
+To start, for our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
 ```{r}
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 ```
@@ -282,25 +285,29 @@ We can see from the two summaries, that a large amount of the country categories
 We can also see that train_stat was not significant in either of the models, so let's also remove that from future models.
 
 Lastly, it seems very possible that age and years_teacher are correlated, since teachers that have been teaching for longer are likely to be older.  We can also see that they seem quite correlated from the plot earlier of age against years_teacher.  As a result, we probably don't need both predictors in our linear model.  Let's check the correlation:
+
 ```{r}
-cor(teacher_data$age, teacher_data$years_teacher)
+cor(teacher_data$age, teacher_data$years_teacher, use = "complete.obs")
 ```
 
-We can see above that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off from teaching.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
+This shows that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off from teaching.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
 
 ```{r}
 teacher_data$age_start <- age_start
 teacher_data$age_ratio <- teacher_data$years_teacher/teacher_data$age
 ```
 
-
+Now let's see whether our new predictors, or one of our older predictors, seems to have the clearest linear relationship with our response variable, sat_avg:
 
 ```{r}
+#NEED TO MAKE THIS A SMALL GRID OF PLOTS:
 teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
 teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
 teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
 teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
 ```
+
+From the plots above, it looks like years_teacher has the clearest linear relationship with sat_avg, so we're going to use that predictor in our linear model.
 
 Let's also make sure that the prep_A, prep_B, and prep_C predictors are not too highly correlated.
 
@@ -318,13 +325,14 @@ We can see from the correlation matrix above that all three prep questions are p
 teacher_data$avg_prep <- apply(data, 1, mean)
 ```
 
+Now let's make a new dataset with all of the variable selections we just made. So we need to remove region, train_stat, age, age_start, age_ratio, and all three prep predictors.
+
 ```{r}
-prep_indices <- grep("prep_", names(teacher_data))
 x.new <- teacher_data[, -c(sat_indices, na_cols, subject_indices, prep_indices)]
-x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age"))])
+x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age", "age_start", "age_ratio"))])
 ```
 
-Now let's see if all of the variables we have in our dataset are normally distributed, or if some transformations might be helpful:
+Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:
 
 ```{r}
 x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
@@ -339,7 +347,7 @@ x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogra
 ```
 Both of these histograms, although not perfectly normal, also don't have a huge amount of skew.  In fact, the histogram for time spent on reaching related activities has very little skew.  As a result, we probably don't need to transform either of these variables either.
 
-Model without train_stat:
+New Linear Model:
 ```{r}
 m_final <- lm(sat_avg ~ ., data=x.new)
 summary(m_final)
@@ -356,11 +364,10 @@ Now let's analyze the coefficients of the model.  We can see from the summary of
 confint(m_final)
 ```
 
-Using stepwise regression
+Let's also use stepwise regression and see what predictors it decides to remove:
 ```{r}
-# Remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
-# Also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
-m.full <- lm(sat_avg ~., data=x[,-which(names(x) %in% c("region"))])
+x <- na.omit(teacher_data[,-c(sat_indices, na_cols, subject_indices)])
+m.full <- lm(sat_avg ~., data=x)
 m.empty <- lm(sat_avg ~ 1, data=x)
 ```
 
