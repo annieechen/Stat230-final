@@ -303,15 +303,17 @@ Both of these histograms, although not perfectly normal, also don't have a huge 
 
 Model without train_stat:
 ```{r}
-
+m_final <- lm(sat_avg ~ ., data=x.new)
+summary(m_final)
 ```
 
-Lastly, let's make sure that the assumptions for linear regression hold.
+Before analyzing this model, let's make sure that the assumptions for linear regression hold.
 ```{r}
-#QUESTION: WHAT IS THIS ERROR?
-plot(m2)
-summary(m2)
+plot(m_final)
 ```
+
+Now let's analyze the coefficients of the model.  We can see from the summary of m_final, that a lot of the coefficients have statistically significant p-values.  However, this is somewhat expected given the large size of our dataset.  In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, let's look at the magnitude of the coefficients, and the confidence intervals of the coefficients and see how far away they are from zero.
+
 
 Using stepwise regression
 ```{r}
