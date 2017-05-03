@@ -441,27 +441,12 @@ teacher_data[, c("prep_A", "prep_B", "prep_C","region")] %>%
 # gender plot
 teacher_data %>% filter(!is.na(gender)) %>% ggplot(aes(x = product(gender, region), fill=factor(gender)), na.rm=TRUE) +  geom_mosaic()  +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='Gender') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
-# age plot
-teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
 
 # total_time plot
 teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
 
-# age_start plot
-
-teacher_data %>% filter(!is.na(age_start)) %>% ggplot(aes(x=reorder(region, -as.numeric(age_start), median), y=as.numeric(age_start))) + geom_boxplot() + xlab("Region") + ylab("Years not spent teaching")
-
 ```
 
-For collaboration we can see that there is a median response rate of 3 (agree) for all regions, but that they differ in the distribution of quartiles. East Mediterranean's teachers had a quartile of responses in Strongly Agree, while North America, South America, and Western Europe had a quartile of responses in Disagree, and Eastern Europe, Northern Europe, Southern Europe, and Western Pacific had 50% of responses in Agree.
-
-For prep_a, the question that asked teachers whether they  feel prepared for the “content of the subjects that I teach”, we see that East Mediterranean and Western Europe are the slight outliers, with 75% of teachers feeling very well prepared in the former, and more than half the teachers feeling less than very well prepared in the later.
-
-For prep_b, the question that asked teachers whether they feel prepared for the “pedagogy of the subjects I teach”, we see that East Mediterranean and Eastern Europe are the two regions that have "Very Well" rather than "Well" as the median. 
-
-For prep_c, the question that asked teachers whether they feel prepared for the “classroom practice in the subjects that I teach”, the regions are split equally, with East Mediterranean, Eastern Europe, South America, and Southern Europe respondents median "Very Well", and the other 4 regions median "Well"
-
-The median ages across regions range from mid 40s to high 30s, but the middle 50% of the data overlaps across all the regions. The same is true for total time working, which ranges from mid 30s to mid 40s, and years working as teacher, which ranges from mid to late teens. 
 
 (3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
