@@ -436,7 +436,7 @@ teacher_data %>% filter(!is.na(age_start)) %>% ggplot(aes(x=reorder(region, -as.
 
 ```
 
-For collboration we can see that there is a median response rate of 3 (agree) for all regions, but that they differ in the distribution of quartiles. East Mediterranean's teachers had a quartile of responses in Strongly Agree, while North America, South America, and Western Europe had a quartile of responses in Disagree, and Eastern Europe, Northern Europe, Southern Europe, and Western Pacific had 50% of responses in Agree.
+For collaboration we can see that there is a median response rate of 3 (agree) for all regions, but that they differ in the distribution of quartiles. East Mediterranean's teachers had a quartile of responses in Strongly Agree, while North America, South America, and Western Europe had a quartile of responses in Disagree, and Eastern Europe, Northern Europe, Southern Europe, and Western Pacific had 50% of responses in Agree.
 
 For prep_a, the question that asked teachers whether they  feel prepared for the “content of the subjects that I teach”, we see that East Mediterranean and Western Europe are the slight outliers, with 75% of teachers feeling very well prepared in the former, and more than half the teachers feeling less than very well prepared in the later.
 
@@ -505,10 +505,6 @@ summary(lm(sat_avg ~ region*as.numeric(years_teacher), data=teacher_data))
 # years_teacher and region plot
 teacher_data %>% filter(!is.na(as.numeric(years_teacher))) %>% ggplot(aes(x=as.numeric(years_teacher), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Years Working As Teacher") + ylab("Sat") + facet_wrap(~region)
 ```
-
-
-(2) TODO
-(3) TODO
 
 #### One-way ANOVA Test
 
