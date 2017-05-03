@@ -96,10 +96,15 @@ teacher_data$region <- as.factor(teacher_data$region)
 # Introduction
 
   This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset. This data set was coordinated by the Organization for Economic Cooperation and Development (OECD), an intergovernmental organization of industrialized countries. The TALIS dataset comes from a survey of the teaching workforce that aims to collect information about teaching as a profession, the working conditions of teachers, and the learning environments of schools. Another goal of the TALIS survey was to provide a more global view of education systems, and to produce metrics that could be used to compare education systems from different countries.  
-  TALIS was administered in 2008 and 2013. We will be using the more recent international dataset, from 2013.  It contains answers from teachers from more than 10,000 schools in 36 different countries. It's worth noting that not all of the countries were English speaking, and that the only requirement for each participating country was that it must be industrialized.  The TALIS dataset contains several different files.  The data is split by school type (primary school, secondary school etc).  Although the TALIS dataset contains information from a variety of school types (primary, secondary, etc), the focus of the survey was on lower-secondary schools, and that is the largest data file.  As a result, we are going to focus our analysis on lower-secondary schools.  At each school that was selected to participate, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires.  Our analysis below consists of only the teacher responses, not the responses of the principals, as they were given slightly different questionnaires.
+  
+  TALIS was administered in 2008 and 2013. We will be using the more recent international dataset, from 2013.  It contains answers from teachers from more than 10,000 schools in 36 different countries. Not all of the countries were English speaking. The only eligibility requirement was that countries must be industrialized.  The TALIS dataset contains several different files.  The data is split by school type (primary school, secondary school etc).  Although the TALIS dataset contains information from a variety of school types (primary, secondary, etc), the focus of the survey was on lower-secondary schools, and that is the largest data file.  As a result, we are going to focus our analysis on lower-secondary schools.  At each school that was selected to participate, the principal (or head administrator) and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires.  Our analysis below consists of only the teacher responses, not the responses of the principals, as they were given slightly different questionnaires.
+  
+  
   The first question we hope to explore in our analysis, is:
   (1) Which variables and classroom factors are the best predictors of teacher job satisfaction?
-  There are several reasons motivating this question.  Education is incredibly important to any countries development and functioning.  It's important that a country can educate it's youth, so that they can participate in society when they are adults.  However, there is a fair amount of diversity across countries with regard to how well the teaching profession is respected, and how well education systems are funded.  As a result, teacher working conditions vary quire a bit.  However, in order to make sure that there are enough teachers, and that they are able to teach their students well, it is important to make sure that teacher satisfaction is at a high enough level.  If teacher satisfaction is too low, it becomes difficult to retain a large enough teaching force, and to attract talented people to the field.  Low teacher satisfaction can also indicate that they are having trouble doing their job well, possibly due to environmental factors out of their control.  For many reasons such as these, teacher satisfaction is a useful metric to observe in any education system.  It's also helpful to understand what kinds of environments keep teachers more satisfied, so that educational systems can encourage and build these types of environments.  Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction, could be helpful information.
+  
+  There are several reasons motivating this question.  Education is incredibly important to any countries development and functioning.  It's important that a country can educate its youth, so that they can participate in society when they are adults.  However, there is a fair amount of diversity across countries with regard to how well the teaching profession is respected, and how well education systems are funded.  As a result, teacher working conditions vary quite a bit.  However, in order to make sure that there are enough teachers, and that they are able to teach their students well, it is important to make sure that teacher satisfaction is at a high enough level. If teacher satisfaction is too low, it becomes difficult to retain a large enough teaching force, and to attract talented people to the field.  Low teacher satisfaction can also indicate that they are having trouble doing their job well, possibly due to environmental factors out of their control.  For many reasons such as these, teacher satisfaction is a useful metric to observe in any education system.  It's also helpful to understand what kinds of environments keep teachers more satisfied, so that educational systems can encourage and build these types of environments.  Therefore, understanding how teacher satisfaction varies across the 36 countries in the data set, and which aspects of a school and environment correlate most with teacher satisfaction, could be helpful information.
+  
   Our second research question is:
   (2) How do teacher satisfaction, as well as some of the significant predictors found from question 1, vary by country?
 
@@ -188,28 +193,41 @@ teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Hist
 
 We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is also another pretty clear dropoff after 60, which also seems like a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time on class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day) due to time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is a physically possible time commitment, it seems highly unlikely.  It is possible that edge cases such as teachers at boarding schools could claim this kind of time comittment, but other than unusual situations like that, more than 90 hours a week seems highly improbable.  Given this fact, let's see how many teachers reported spending 90 hours a week or more on teaching related activities.
 
-```{r}
+```{r, echo=TRUE}
 length(teacher_data[teacher_data$total_time>=90 & !is.na(teacher_data$total_time),]$total_time)
 length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),]$total_time)
 ```
 
 We can see that there are quite a few values of exactly 90, given the fact that the length of the vector where total_time is greater than or equal to 90 is so much longer than the vector that is strictly greater than 90.  Given this fact, we will keep the values of 90, but set all values that are higher than 90 hours a week to NA, since it seems highly unlikely that any teacher is working more than 90 hours a week.
 
-```{r}
+```{r, echo=TRUE}
 teacher_data[teacher_data$total_time < 90,]$total_time <- NA
 ```
 
 We can now take a look at reported age vs years teaching. 
 ```{r}
-teacher_data %>% ggplot(aes(x=age, y=years_teacher)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1, color="red") +  geom_abline(intercept = -10, slope=1, color="yellow")+  geom_jitter(shape=".") + labs(title="Reported Age vs Years Teaching", x="Age (years)", y="Years Teaching (years)")
+teacher_data %>% ggplot(aes(x=age, y=years_teacher)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1, color="red") +  geom_abline(intercept = -15, slope=1, color="yellow")+  geom_jitter(shape=".") + labs(title="Reported Age vs Years Teaching", x="Age (years)", y="Years Teaching (years)")
 ```
 
-We can see that there are points above the red line, which are teachers who reported they had been teaching longer than they had been alive. Indeed, let's see how many responses reported years that would indicate that they had started teaching before age 11 (points above the yellow line), and remove those values.
+We can see that there are points above the red line, which are teachers who reported they had been teaching longer than they had been alive. Indeed, let's see how many responses reported years that would indicate that they had started teaching before age 15 (points above the yellow line), and remove those values.
 
-```{r}
+```{r, echo=TRUE}
 age_start <- teacher_data$age - teacher_data$years_teacher
 nrow(teacher_data[age_start <= 15,])
 teacher_data <- teacher_data[which(age_start >= 15),]
+```
+
+Now, because we can see from the above plot that age and years teaching are strongly positively correlated, we know that it doesn't make sense to include both of those as predictors. We can take a look at the histogram of the age_start variable - perhaps when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off. 
+
+```{r}
+as.data.frame(age_start) %>% ggplot(aes(x=age_start)) + geom_histogram(binwidth = 2) + labs(title="Histogram of Age When started teaching", x="Age (years) - Years working as a teacher", y="Count")
+```
+
+Now, let's add this column to our data frame, and remove the years_teaching variable
+
+```{r}
+teacher_data$years_teacher <- NULL
+teacher_data$age_start <- age_start
 ```
 
 ### Analysis for Research Question 1
