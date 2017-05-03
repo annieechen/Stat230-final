@@ -124,7 +124,7 @@ teacher_data$region <- as.factor(teacher_data$region)
 
 Each row of the dataset corresponds to single teacher's response to the questionnaire (There are 117876 rows).  Each column in the dataset corresponds to either a particular question in the questionnaire, or a summary variable for a section of the questionnaire.
 
-The dataset contains a column for each individual question on the questionnaire, and summary columns for overall sections. There are columns concerning employment status, personal information/background, time spent, professional development, efficacy and amount of feedback, outlook about the school, school climate, overall job satisfaction, and much more. For example, there are individual columns for questions such as “The advantages of this profession clearly outweigh the disadvantages” and “I would recommend my school as a good place to work”, but also an overall column summing up all the scores for the teacher satisfaction questions. The specific variables we are using are listed below. Almost all of the questions in the questionnaire were multiple choice or numerical input questions.
+The dataset contains a column for each individual question on the questionnaire, and summary columns for overall sections. For example, there are individual columns for questions such as “The advantages of this profession clearly outweigh the disadvantages” and “I would recommend my school as a good place to work”, but also an overall column summing up all the scores for the teacher satisfaction questions. There are columns concerning employment status, personal information/background, time spent, professional development, efficacy and amount of feedback, outlook about the school, school climate, overall job satisfaction, and much more. The specific variables we are using are listed below. Almost all of the questions in the questionnaire were multiple choice or numerical input questions.
 
 The variables we are using are:
 
@@ -134,15 +134,16 @@ The variables we are using are:
 * `age (TT2G02):` Teacher Age (numeric variable)
 * `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
 * `train_stat (TT2G11):` Training level of teacher (factor variable)
-* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (factor variable, 4 levels)
+* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (ordered factor variable, 4 levels)
+* `avg_prep:` The average of each teachers responses for prep_A/B/C (numeric variable between 1 and 4)
 * `total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
-* `feedback_salary (TT2G30G):` Whether performance feedback influences salary (factor variable, 4 levels)
-* `collab (TT2G44E):` How collaborative is the school culture? (factor variable, 4 levels)
+* `feedback_salary (TT2G30G):` Whether performance feedback influences salary (ordered factor variable, 4 levels)
+* `collab (TT2G44E):` How collaborative is the school culture? (ordered factor variable, 4 levels)
 * `num_students (TT2G38):` Number of students in the teacher’s class (numeric variable)
-* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (factor variable, 4 levels)
+* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (ordered factor variable, 4 levels)
 * `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches (boolean numeric variable)
 * `num_subjects:` The number of subjects the teacher teaches (numeric variable)
-* `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (factor variables, 4 levels)
+* `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (ordered factor variables, 4 levels)
 * `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable)
 
 #### Initial Plots Describing Data
@@ -301,12 +302,12 @@ teacher_data$age_ratio <- teacher_data$years_teacher/teacher_data$age
 
 Now let's see whether our new predictors, or one of our older predictors, seems to have the clearest linear relationship with our response variable, sat_avg:
 
-```{r}
-#NEED TO MAKE THIS A SMALL GRID OF PLOTS:
-teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
-teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
-teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
-teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
+```{r, fig.height=3}
+plot1 <- teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
+plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
+plot3 <- teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
+plot4 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
+grid.arrange(plot1, plot2, plot3, plot4, ncol=2)
 ```
 
 From the plots above, it looks like years_teacher has the clearest linear relationship with sat_avg, so we're going to use that predictor in our linear model.
@@ -367,35 +368,6 @@ Now let's analyze the coefficients of the model.  We can see from the summary of
 confint(m_final)
 ```
 
-Let's also use stepwise regression and see what predictors it decides to remove:
-```{r}
-x <- na.omit(teacher_data[,-c(sat_indices, na_cols, subject_indices)])
-m.full <- lm(sat_avg ~., data=x)
-m.empty <- lm(sat_avg ~ 1, data=x)
-```
-
-Forward, backwards, and both
-```{r}
-# With AIC
-m.forward.aic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="forward", trace=FALSE)
-m.backward.aic <- step(m.full, scope=list(lower=m.empty),
-                  data=x, direction="backward", trace=FALSE)
-m.both.aic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="both", trace=FALSE)
-
-# With BIC
-m.forward.bic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="forward", trace=FALSE, k=log(nrow(x)))
-m.backward.bic <- step(m.full, scope=list(lower=m.empty),
-                  data=x, direction="backward", trace=FALSE, k=log(nrow(x)))
-m.both.bic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="both", trace=FALSE, k=log(nrow(x)))
-```
-
-We can see from the results above, that with AIC as the criterion, all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
-
-Using the BIC criterion, all three models ended up using all of the same predictors as the AIC stepwise models, except without prep_A.
 
 NOTE: need conclusion to this section!!!
 
