@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 library("foreign")
-library("dplyr")
 library("tidyr")
 library("countrycode")
 library("rworldmap")
@@ -25,6 +24,8 @@ library(gridExtra)
 library(leaps)
 library(GGally)
 library(ggmosaic)
+library(plyr)
+library("dplyr")
 ```
 
 ```{r, include=FALSE}
@@ -124,7 +125,7 @@ teacher_data$region <- as.factor(teacher_data$region)
 
 Each row of the dataset corresponds to single teacher's response to the questionnaire (There are 117876 rows).  Each column in the dataset corresponds to either a particular question in the questionnaire, or a summary variable for a section of the questionnaire.
 
-The dataset contains a column for each individual question on the questionnaire, and summary columns for overall sections. There are columns concerning employment status, personal information/background, time spent, professional development, efficacy and amount of feedback, outlook about the school, school climate, overall job satisfaction, and much more. For example, there are individual columns for questions such as “The advantages of this profession clearly outweigh the disadvantages” and “I would recommend my school as a good place to work”, but also an overall column summing up all the scores for the teacher satisfaction questions. The specific variables we are using are listed below. Almost all of the questions in the questionnaire were multiple choice or numerical input questions.
+The dataset contains a column for each individual question on the questionnaire, and summary columns for overall sections. For example, there are individual columns for questions such as “The advantages of this profession clearly outweigh the disadvantages” and “I would recommend my school as a good place to work”, but also an overall column summing up all the scores for the teacher satisfaction questions. There are columns concerning employment status, personal information/background, time spent, professional development, efficacy and amount of feedback, outlook about the school, school climate, overall job satisfaction, and much more. The specific variables we are using are listed below. Almost all of the questions in the questionnaire were multiple choice or numerical input questions.
 
 The variables we are using are:
 
@@ -134,15 +135,16 @@ The variables we are using are:
 * `age (TT2G02):` Teacher Age (numeric variable)
 * `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
 * `train_stat (TT2G11):` Training level of teacher (factor variable)
-* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (factor variable, 4 levels)
+* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (ordered factor variable, 4 levels)
+* `avg_prep:` The average of each teachers responses for prep_A/B/C (numeric variable between 1 and 4)
 * `total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
-* `feedback_salary (TT2G30G):` Whether performance feedback influences salary (factor variable, 4 levels)
-* `collab (TT2G44E):` How collaborative is the school culture? (factor variable, 4 levels)
+* `feedback_salary (TT2G30G):` Whether performance feedback influences salary (ordered factor variable, 4 levels)
+* `collab (TT2G44E):` How collaborative is the school culture? (ordered factor variable, 4 levels)
 * `num_students (TT2G38):` Number of students in the teacher’s class (numeric variable)
-* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (factor variable, 4 levels)
+* `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (ordered factor variable, 4 levels)
 * `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches (boolean numeric variable)
 * `num_subjects:` The number of subjects the teacher teaches (numeric variable)
-* `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (factor variables, 4 levels)
+* `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (ordered factor variables, 4 levels)
 * `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable)
 
 #### Initial Plots Describing Data
@@ -237,6 +239,9 @@ sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
 subject_names <- c("R_WR_Lit", "Math", "Science", "Soc_Studies", "Modern_Lang", "Ancient_Lang", "Tech", "Arts", "PE", "Rel_Ethics", "Practical", "Other")
 subject_indices <- c(which(colnames(teacher_data) %in% subject_names))
 
+# We might not want to include the three questions about how prepared they felt:
+prep_indices <- grep("prep_", names(teacher_data))
+
 # Some columns also have many more NA values, lets make a list of the columns that have NA values in more than 10% of the data (this ends up being num_students and feedback_salary), that way we can choose whether or not to include them in our linear models
 na_cols <- c()
 for(i in 1:ncol(teacher_data)) {
@@ -258,7 +263,7 @@ for(i in 1:ncol(teacher_data)) {
 
 
 Dataset for Linear Regression Model:
-For our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
+To start, for our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our resposne variable.
 ```{r}
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 ```
@@ -282,33 +287,29 @@ We can see from the two summaries, that a large amount of the country categories
 We can also see that train_stat was not significant in either of the models, so let's also remove that from future models.
 
 Lastly, it seems very possible that age and years_teacher are correlated, since teachers that have been teaching for longer are likely to be older.  We can also see that they seem quite correlated from the plot earlier of age against years_teacher.  As a result, we probably don't need both predictors in our linear model.  Let's check the correlation:
+
 ```{r}
-cor(teacher_data$age, teacher_data$years_teacher)
+cor(teacher_data$age, teacher_data$years_teacher, use = "complete.obs")
 ```
 
-We can see above that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off from teaching.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
+This shows that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off from teaching.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
 
 ```{r}
 teacher_data$age_start <- age_start
 teacher_data$age_ratio <- teacher_data$years_teacher/teacher_data$age
 ```
 
+Now let's see whether our new predictors, or one of our older predictors, seems to have the clearest linear relationship with our response variable, sat_avg:
 
-
-```{r}
-p11 <- teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
-p12 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
-p13 <- teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
-p14 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
+```{r, fig.height=3}
+plot1 <- teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
+plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
+plot3 <- teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
+plot4 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
+grid.arrange(plot1, plot2, plot3, plot4, ncol=2)
 ```
 
-```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
-grid.arrange(p11, p12, ncol=2)
-```
-
-```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
-grid.arrange(p13, p14, ncol=2)
-```
+From the plots above, it looks like years_teacher has the clearest linear relationship with sat_avg, so we're going to use that predictor in our linear model.
 
 Let's also make sure that the prep_A, prep_B, and prep_C predictors are not too highly correlated.
 
@@ -326,13 +327,14 @@ We can see from the correlation matrix above that all three prep questions are p
 teacher_data$avg_prep <- apply(data, 1, mean)
 ```
 
+Now let's make a new dataset with all of the variable selections we just made. So we need to remove region, train_stat, age, age_start, age_ratio, and all three prep predictors.
+
 ```{r}
-prep_indices <- grep("prep_", names(teacher_data))
 x.new <- teacher_data[, -c(sat_indices, na_cols, subject_indices, prep_indices)]
-x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age"))])
+x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age", "age_start", "age_ratio"))])
 ```
 
-Now let's see if all of the variables we have in our dataset are normally distributed, or if some transformations might be helpful:
+Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:
 
 ```{r, fig.height=2.5, warning=FALSE}
 x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
@@ -355,7 +357,6 @@ Both of these histograms, although not perfectly normal, also don't have a huge 
 Model without train_stat (summary removed from report for the sake of space):
 ```{r, echo=TRUE}
 m_final <- lm(sat_avg ~ ., data=x.new)
-
 ```
 
 Before analyzing this model, let's make sure that the assumptions for linear regression hold.
@@ -369,42 +370,46 @@ Now let's analyze the coefficients of the model.  We can see from the summary of
 confint(m_final)
 ```
 
-Using stepwise regression
-```{r}
-# Remove SAT questions, since they obviously explain our predictor variable, and then remove NAs for stepwise regression
-# Also remove subject columns, we have a column that counts the number of subjects each teacher is teaching, to represent this information instead.
-m.full <- lm(sat_avg ~., data=x[,-which(names(x) %in% c("region"))])
-m.empty <- lm(sat_avg ~ 1, data=x)
-```
-
-Forward, backwards, and both
-```{r}
-# With AIC
-m.forward.aic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="forward", trace=FALSE)
-m.backward.aic <- step(m.full, scope=list(lower=m.empty),
-                  data=x, direction="backward", trace=FALSE)
-m.both.aic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="both", trace=FALSE)
-
-# With BIC
-m.forward.bic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="forward", trace=FALSE, k=log(nrow(x)))
-m.backward.bic <- step(m.full, scope=list(lower=m.empty),
-                  data=x, direction="backward", trace=FALSE, k=log(nrow(x)))
-m.both.bic <- step(m.empty, scope=list(upper=m.full),
-                  data=x, direction="both", trace=FALSE, k=log(nrow(x)))
-```
-
-We can see from the results above, that with AIC as the criterion, all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
-
-Using the BIC criterion, all three models ended up using all of the same predictors as the AIC stepwise models, except without prep_A.
 
 NOTE: need conclusion to this section!!!
 
 ### Analysis for Research Question 2
 
 To address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors, we are going to try several techniques.
+
+First, we plot some maps to better visualize the teacher satisfaction across countries and by region
+
+```{r, warning=FALSE, include=FALSE}
+# set to ISO codes
+teacher_data$country <- revalue(teacher_data$country, c("AAD"="ARE", "BFL"="BEL","CAB"="CAN","CSH"="CHN","ENG"="GBR"))
+# apparently plyr dependencies will mess things up
+detach(package:plyr)
+country_avg <- teacher_data %>% group_by(country) %>% summarize(mean_satisfaction = mean(sat_avg, na.rm=TRUE))
+library(plyr); library(dplyr)
+#code for map with average teacher satisfaction by country
+sPDF <- joinCountryData2Map(country_avg, joinCode = "ISO3", nameJoinColumn = "country")
+```
+
+```{r}
+mapCountryData(sPDF, nameColumnToPlot = "mean_satisfaction")
+```
+
+Now, we plot the regions we categorized countries by, which we found using the World Health Organization data.
+
+*Also I hope this will look better once knitted but if not it will need to be tweaked.Sad!*
+
+```{r}
+country_region_pairs <- unique(teacher_data[c("country", "region")])
+#code for map with average teacher satisfaction by country
+sPDF <- joinCountryData2Map(country_region_pairs, joinCode = "ISO3", nameJoinColumn = "country")
+mapParams  <-mapCountryData(sPDF, 
+               nameColumnToPlot = "region",
+               colourPalette="rainbow",
+               addLegend = FALSE,
+               mapTitle = "WHO Regions"
+               )
+do.call(addMapLegendBoxes, c(mapParams, x='bottomleft',title="Region", cex=1.2))
+```
 
 #### Plots
 
