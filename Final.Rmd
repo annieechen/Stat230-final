@@ -410,8 +410,10 @@ teacher_data[, c("prep_A", "prep_B", "prep_C","region")] %>%
     theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Prepared the Teacher felt') + guides(fill=guide_legend(title = "Response", reverse=TRUE)) + 
     facet_wrap(~ var, scales = "free") 
 
-# age plot
+# gender plot
+teacher_data %>% filter(!is.na(gender)) %>% ggplot(aes(x = product(gender, region), fill=factor(gender)), na.rm=TRUE) +  geom_mosaic()  +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='Gender') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
+# age plot
 teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
 
 # total_time plot
@@ -427,14 +429,6 @@ teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, 
 
 
 
-```{r}
-
-teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
-
-#gender plot
-#NOTE: fix margins
-mosaicplot(region ~ gender, data=teacher_data, las=2)
-```
 
 For collboration we can see that there is a median response rate of 3 (agree) for all regions, but that they differ in the distribution of quartiles. East Mediterranean's teachers had a quartile of responses in Strongly Agree, while North America, South America, and Western Europe had a quartile of responses in Disagree, and Eastern Europe, Northern Europe, Southern Europe, and Western Pacific had 50% of responses in Agree.
 
