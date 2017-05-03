@@ -4,7 +4,6 @@ author: "Veena Advani, Annie Chen, Robert Tung"
 date: "Due 5/5/2017"
 output:
   html_document: default
-  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -18,7 +17,6 @@ library("countrycode")
 library("rworldmap")
 library(ggplot2)
 library(reshape2)
-library(FNN)
 library(grid)
 library(gridExtra)
 library(leaps)
@@ -183,7 +181,7 @@ p3
 
 # Analysis
 
-### Removal of Strange Values
+### Removal of Unusual Values
 
 Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to set these values to NA, since they are likely unreliable.
 
@@ -220,7 +218,7 @@ teacher_data[age_start < 15 & !is.na(age_start), "years_teacher"] <- NA
 
 ### Analysis for Research Question 1
 
-To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to attempt to use several techniques.
+To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to create a linear model.
 
 #### Linear Regression Analysis
 Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look at a matrix of plots of the data, before diving into any linear regression models:
@@ -342,14 +340,16 @@ x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="
 
 We can see from the histogram of sat_avg above, that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
 
-```{r, warning=FALSE}
-#QUESTION: is there a way to do a histogram of all the variables in x?
-p21 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
-p22 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
-```
+```{r}
+h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
 
-```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
-grid.arrange(p21, p22, ncol=2)
+h2 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
+
+h3 <- x.new %>% ggplot(aes(x=collab)) + geom_bar() + labs(title="Collaboration Rating", x="How Collaborative is School Culture", y="Count")
+
+h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() + labs(title="Histogram of # Subjects", x="Number Subjects Taught", y="Count")
+
+grid.arrange(h1, h2, h3, h4, ncol = 2)
 ```
 
 Both of these histograms, although not perfectly normal, also don't have a huge amount of skew.  In fact, the histogram for time spent on reaching related activities has very little skew.  As a result, we probably don't need to transform either of these variables either.
@@ -455,15 +455,6 @@ p46 <- teacher_data %>% filter(!is.na(age_start)) %>% ggplot(aes(x=reorder(regio
 grid.arrange(p41, p42, p43, p44, p45, p46, ncol=2)
 ```
 
-For collaboration we can see that there is a median response rate of 3 (agree) for all regions, but that they differ in the distribution of quartiles. East Mediterranean's teachers had a quartile of responses in Strongly Agree, while North America, South America, and Western Europe had a quartile of responses in Disagree, and Eastern Europe, Northern Europe, Southern Europe, and Western Pacific had 50% of responses in Agree.
-
-For prep_a, the question that asked teachers whether they  feel prepared for the “content of the subjects that I teach”, we see that East Mediterranean and Western Europe are the slight outliers, with 75% of teachers feeling very well prepared in the former, and more than half the teachers feeling less than very well prepared in the later.
-
-For prep_b, the question that asked teachers whether they feel prepared for the “pedagogy of the subjects I teach”, we see that East Mediterranean and Eastern Europe are the two regions that have "Very Well" rather than "Well" as the median. 
-
-For prep_c, the question that asked teachers whether they feel prepared for the “classroom practice in the subjects that I teach”, the regions are split equally, with East Mediterranean, Eastern Europe, South America, and Southern Europe respondents median "Very Well", and the other 4 regions median "Well"
-
-The median ages across regions range from mid 40s to high 30s, but the middle 50% of the data overlaps across all the regions. The same is true for total time working, which ranges from mid 30s to mid 40s, and years working as teacher, which ranges from mid to late teens. 
 
 (3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
 
