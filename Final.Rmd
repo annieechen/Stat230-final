@@ -150,6 +150,8 @@ The variables we are using are:
 
 #### Initial Plots Describing Data
 
+*sidenote: I think we should bring back teacher sat by country plot* 
+
 Below are three plots that show our data and hopefully motivate our research questions and the analysis.
 ```{r, warning=FALSE, echo=FALSE}
 # Histogram of teacher satisfaction
@@ -434,9 +436,9 @@ teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeri
 # total_time plot
 teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
 
-# years_teacher plot
+# age_start plot
 
-teacher_data %>% filter(!is.na(years_teacher)) %>% ggplot(aes(x=reorder(region, -as.numeric(years_teacher), median), y=as.numeric(years_teacher))) + geom_boxplot() + xlab("Region") + ylab("Years Working as Teacher")
+teacher_data %>% filter(!is.na(age_start)) %>% ggplot(aes(x=reorder(region, -as.numeric(age_start), median), y=as.numeric(age_start))) + geom_boxplot() + xlab("Region") + ylab("Years not spent teaching")
 
 ```
 
@@ -552,6 +554,23 @@ summary(m_countryonly)
 0.08257/0.2474 is roughly 33.4%, therefore the country variable alone accounts for 33% of the variability that our final model in Part 1 was able to explain.
 
 # Conclusion:
+
+Overall, our models didn't explain very much of the variation in the data at all. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so were pleased with the observations we did find.
+
+__insert findings here lol__
+
+Before we started looking into the data, we expected there to be a lot more unsatisfied teachers than there actually were. Indeed, if we take `sat_avg` scores of above 2.5 to mean that the respondent is generally satisfied (if on average, they responded Agree or Strongly Agree more than Disagree or Strongly Disgree on the teacher satisfaction questions), then
+```{r, echo=TRUE}
+nrow(teacher_data[teacher_data$sat_avg >=2.5,])/nrow(teacher_data)
+```
+of our respondents were satisfied. Of course, this is a very low baseline (it just means the teacher didn't respond "Agree" or "Strongly Agree" to a question like "I regret that I decided to become a teacher.") If we were to collect the data particularly to understand how various factors affect teacher satisfication. we would want to get a more precise sense of how satisfied or unsatisfied teachers are about specific aspects of teaching. We might ask respondents to our survey to rate, on a scale from 1 - 10, their satisfaction with things like working conditions, pay, sense of impact, and more. 
+
+As far as concerns about the data, when we did our data cleaning, we did find some suspicious responses. There were things we could say were impossible, such as working longer than one has been alive, but we could have other incorrectly reported responses that we weren't  able to immediately mark as suspicious. Because all of the data was a self reported survey, inaccurate/falsely reported answers were pretty inevitable, but are still a concern about the data.
+
+
+One area that our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, so that it was easier to visualize and interpret our results by group of countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a satistically significant difference.
+
+
 
 ## Code Appendix
 
