@@ -3,8 +3,8 @@ title: "Final Project"
 author: "Veena Advani, Annie Chen, Robert Tung"
 date: "Due 4/28/2017"
 output:
-  word_document: default
   html_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -186,7 +186,7 @@ p3
 Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to set these values to NA, since they are likely unreliable.
 
 The total time spent on teaching related activities per week:
-```{r}
+```{r, fig.height=2.5}
 teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
 ```
 
@@ -204,7 +204,7 @@ teacher_data[teacher_data$total_time > 90 & !is.na(teacher_data$total_time), "to
 ```
 
 We can now take a look at reported age vs years teaching. 
-```{r}
+```{r, fig.height=2.5}
 teacher_data %>% ggplot(aes(x=age, y=years_teacher)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1, color="red") +  geom_abline(intercept = -15, slope=1, color="yellow")+  geom_jitter(shape=".") + labs(title="Reported Age vs Years Teaching", x="Age (years)", y="Years Teaching (years)")
 ```
 
@@ -265,18 +265,16 @@ x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 
 One of the things we are interested in is how geography impacts teacher satisfaction, however we have two different geography variables.  We can't include both in the model, as they are linearly dependent, and R will only find a set of coefficients for one of the two variables if we put both in the model.  Because of this, let's try both and compare the results:
 
-Linear model using country:
-```{r}
+Linear model using country (summary has been left out for space):
+```{r, echo=TRUE}
 # Try model with country variable and not region
 m_country <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
-summary(m_country)
 ```
 
-Linear model using region:
-```{r}
+Linear model using region (summary has been left out for space):
+```{r, echo=TRUE}
 # Try model with region variable and not country
 m_region <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("country"))])
-summary(m_region)
 ```
 
 We can see from the two summaries, that a large amount of the country categories are significant, and all of the region categories are also significant.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1981.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model.
@@ -298,10 +296,18 @@ teacher_data$age_ratio <- teacher_data$years_teacher/teacher_data$age
 
 
 ```{r}
-teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
-teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
-teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
-teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
+p11 <- teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
+p12 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
+p13 <- teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
+p14 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
+```
+
+```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
+grid.arrange(p11, p12, ncol=2)
+```
+
+```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
+grid.arrange(p13, p14, ncol=2)
 ```
 
 Let's also make sure that the prep_A, prep_B, and prep_C predictors are not too highly correlated.
@@ -328,28 +334,32 @@ x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age
 
 Now let's see if all of the variables we have in our dataset are normally distributed, or if some transformations might be helpful:
 
-```{r}
+```{r, fig.height=2.5, warning=FALSE}
 x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
 ```
 
 We can see from the histogram of sat_avg above, that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
 
-```{r}
+```{r, warning=FALSE}
 #QUESTION: is there a way to do a histogram of all the variables in x?
-x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
-x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
+p21 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities", x="Time Spent on Teaching Related Activities", y="Count")
+p22 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() + labs(title="Histogram of Years Spent as a Teacher", x="Years of Teaching Experience", y="Count")
+```
+
+```{r, echo=FALSE, fig.height=2.25, fig.width=10, message=FALSE, warning=FALSE}
+grid.arrange(p21, p22, ncol=2)
 ```
 
 Both of these histograms, although not perfectly normal, also don't have a huge amount of skew.  In fact, the histogram for time spent on reaching related activities has very little skew.  As a result, we probably don't need to transform either of these variables either.
 
-Model without train_stat:
-```{r}
+Model without train_stat (summary removed from report for the sake of space):
+```{r, echo=TRUE}
 m_final <- lm(sat_avg ~ ., data=x.new)
-summary(m_final)
+
 ```
 
 Before analyzing this model, let's make sure that the assumptions for linear regression hold.
-```{r}
+```{r, fig.height=5.5}
 plot(m_final)
 ```
 
@@ -400,7 +410,7 @@ To address our second research question, and try to identify the differences acr
 
 (1) We are first going to plot sat_avg vs region, using the region variable as a factor. This will visually tell us whether there might be a significant difference in satisfaction across regions.
 
-```{r}
+```{r, fig.height=2.5}
 ## p3, used as an example plot earlier in this write-up, is a plot of sat_avg vs region
 ## will fix labels once we figure out how big it can be in the final writeup
 p3
@@ -463,46 +473,47 @@ anova(lm(as.numeric(years_teacher) ~ region, data=teacher_data))
 
 It looks like all of the variables vary across regions.
 
-```{r}
+Linear model summaries removed from below for space.
+
+```{r, fig.height=3}
 # Collab and region LM
-summary(lm(sat_avg ~ region*as.numeric(collab), data=teacher_data))
+lm(sat_avg ~ region*as.numeric(collab), data=teacher_data)
 
 # Collab and region plot
 teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(collab), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Collab") + ylab("Sat") + facet_wrap(~region)
 
 # prep_A and region LM
-summary(lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data))
+lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data)
 
 # prep_A and region plot
 teacher_data %>% filter(!is.na(as.numeric(prep_A))) %>% ggplot(aes(x=as.numeric(prep_A), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_A") + ylab("Sat") + facet_wrap(~region)
 
 # prep_B and region LM
-summary(lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data))
+lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data)
 
 # prep_B and region plot
 teacher_data %>% filter(!is.na(as.numeric(prep_B))) %>% ggplot(aes(x=as.numeric(prep_B), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_B") + ylab("Sat") + facet_wrap(~region)
 
 # prep_C and region LM
-summary(lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data))
+lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data)
 
 # prep_C and region plot
 teacher_data %>% filter(!is.na(as.numeric(prep_C))) %>% ggplot(aes(x=as.numeric(prep_C), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_C") + ylab("Sat") + facet_wrap(~region)
 
 # age and region LM
-summary(lm(sat_avg ~ region*as.numeric(age), data=teacher_data))
+lm(sat_avg ~ region*as.numeric(age), data=teacher_data)
 
 # age and region plot
 teacher_data %>% filter(!is.na(as.numeric(age))) %>% ggplot(aes(x=as.numeric(age), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Age") + ylab("Sat") + facet_wrap(~region)
 
 # total_time and region LM
-summary(lm(sat_avg ~ region*as.numeric(total_time), data=teacher_data))
+lm(sat_avg ~ region*as.numeric(total_time), data=teacher_data)
 
 # total_time and region plot
 teacher_data %>% filter(!is.na(as.numeric(total_time))) %>% ggplot(aes(x=as.numeric(total_time), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Total Time Working") + ylab("Sat") + facet_wrap(~region)
 
 # years_working and region LM
-# years_teacher and region LM
-summary(lm(sat_avg ~ region*as.numeric(years_teacher), data=teacher_data))
+lm(sat_avg ~ region*as.numeric(years_teacher), data=teacher_data)
 
 # years_teacher and region plot
 teacher_data %>% filter(!is.na(as.numeric(years_teacher))) %>% ggplot(aes(x=as.numeric(years_teacher), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Years Working As Teacher") + ylab("Sat") + facet_wrap(~region)
@@ -512,10 +523,9 @@ teacher_data %>% filter(!is.na(as.numeric(years_teacher))) %>% ggplot(aes(x=as.n
 
 After the analysis above is completed, we'll run an ANOVA test to see if there are statistically significant variances in mean `sat_avg` across regions.
 
-```{r}
+```{r, echo=TRUE}
 # Regression of sat_avg vs region
 msatreg <- lm(sat_avg ~ region, data=teacher_data)
-summary(msatreg)
 
 # ANOVA of regression
 anova(msatreg)
@@ -530,9 +540,9 @@ anova(msatreg)
 ```
 
 Let's see how much of the R-squared in our model from part 1 was due to just the country predictor:
-```{r}
+```{r, echo=FALSE}
 m_countryonly <- lm(I(sat_avg^2) ~ country, data=x.new)
-summary(m_countryonly)
+summary(m_countryonly)$r.squared
 ```
 0.08257/0.2474 is roughly 33.4%, therefore the country variable alone accounts for 33% of the variability that our final model in Part 1 was able to explain.
 
