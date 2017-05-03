@@ -317,6 +317,9 @@ plot(m_final)
 
 Now let's analyze the coefficients of the model.  We can see from the summary of m_final, that a lot of the coefficients have statistically significant p-values.  However, this is somewhat expected given the large size of our dataset.  In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, let's look at the magnitude of the coefficients, and the confidence intervals of the coefficients and see how far away they are from zero.
 
+```{r}
+confint(m_final)
+```
 
 Using stepwise regression
 ```{r}
@@ -382,7 +385,7 @@ teacher_data %>% filter(!is.na(collab)) %>% ggplot() +
 
 ```
 
-
+```{r}
 # Collab plot
 teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x=reorder(region, -as.numeric(collab), median), y=as.numeric(collab))) + geom_boxplot() + xlab("Region") + ylab("Collab")
 
