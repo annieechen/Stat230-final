@@ -1,7 +1,7 @@
 ---
 title: "Final Project"
 author: "Veena Advani, Annie Chen, Robert Tung"
-date: "Due 4/28/2017"
+date: "Due 5/5/2017"
 output:
   html_document: default
   word_document: default
@@ -390,7 +390,7 @@ library(plyr); library(dplyr)
 sPDF <- joinCountryData2Map(country_avg, joinCode = "ISO3", nameJoinColumn = "country")
 ```
 
-```{r}
+```{r, fig.height=3}
 mapCountryData(sPDF, nameColumnToPlot = "mean_satisfaction")
 ```
 
@@ -398,7 +398,7 @@ Now, we plot the regions we categorized countries by, which we found using the W
 
 *Also I hope this will look better once knitted but if not it will need to be tweaked.Sad!*
 
-```{r}
+```{r, fig.height=3}
 country_region_pairs <- unique(teacher_data[c("country", "region")])
 #code for map with average teacher satisfaction by country
 sPDF <- joinCountryData2Map(country_region_pairs, joinCode = "ISO3", nameJoinColumn = "country")
@@ -428,10 +428,10 @@ As we stated above, visually, while all median values for sat_avg hover around t
 
 ```{r}
 # collab plot
-teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, region), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p41 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, region), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
 # prep plot
-teacher_data[, c("prep_A", "prep_B", "prep_C","region")] %>%
+p42 <- teacher_data[, c("prep_A", "prep_B", "prep_C","region")] %>%
   gather(-region, key = "var", value = "value") %>%
     mutate(value = factor(value, levels = c("Very Well", "Well", "Somewhat", "Not at all"))) %>%
   ggplot(aes(x = product(value,region), fill=factor(value))) + geom_mosaic() +
@@ -439,18 +439,20 @@ teacher_data[, c("prep_A", "prep_B", "prep_C","region")] %>%
     facet_wrap(~ var, scales = "free") 
 
 # gender plot
-teacher_data %>% filter(!is.na(gender)) %>% ggplot(aes(x = product(gender, region), fill=factor(gender)), na.rm=TRUE) +  geom_mosaic()  +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='Gender') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p43 <- teacher_data %>% filter(!is.na(gender)) %>% ggplot(aes(x = product(gender, region), fill=factor(gender)), na.rm=TRUE) +  geom_mosaic()  +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='Gender') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
 # age plot
-teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
+p44 <- teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
 
 # total_time plot
-teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
+p45 <- teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
 
 # age_start plot
+p46 <- teacher_data %>% filter(!is.na(age_start)) %>% ggplot(aes(x=reorder(region, -as.numeric(age_start), median), y=as.numeric(age_start))) + geom_boxplot() + xlab("Region") + ylab("Years not spent teaching")
+```
 
-teacher_data %>% filter(!is.na(age_start)) %>% ggplot(aes(x=reorder(region, -as.numeric(age_start), median), y=as.numeric(age_start))) + geom_boxplot() + xlab("Region") + ylab("Years not spent teaching")
-
+```{r, echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+grid.arrange(p41, p42, p43, p44, p45, p46, ncol=2)
 ```
 
 For collaboration we can see that there is a median response rate of 3 (agree) for all regions, but that they differ in the distribution of quartiles. East Mediterranean's teachers had a quartile of responses in Strongly Agree, while North America, South America, and Western Europe had a quartile of responses in Disagree, and Eastern Europe, Northern Europe, Southern Europe, and Western Pacific had 50% of responses in Agree.
@@ -480,45 +482,47 @@ It looks like all of the variables vary across regions.
 
 Linear model summaries removed from below for space.
 
-```{r, fig.height=3}
+```{r, echo=TRUE}
 # Collab and region LM
-lm(sat_avg ~ region*as.numeric(collab), data=teacher_data)
-
-# Collab and region plot
-teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(collab), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Collab") + ylab("Sat") + facet_wrap(~region)
+lmcolreg <- lm(sat_avg ~ region*as.numeric(collab), data=teacher_data)
 
 # prep_A and region LM
-lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data)
+lmpareg <- lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data)
+
+# prep_B and region LM
+lmpbreg <- lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data)
+
+# prep_C and region LM
+lmpcreg <- lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data)
+
+# age and region LM
+lmagereg <- lm(sat_avg ~ region*as.numeric(age), data=teacher_data)
+
+# total_time and region LM
+lmttreg <- lm(sat_avg ~ region*as.numeric(total_time), data=teacher_data)
+
+# years_working and region LM
+lmywreg <- lm(sat_avg ~ region*as.numeric(years_teacher), data=teacher_data)
+```
+
+```{r, fig.height=3}
+# Collab and region plot
+teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(collab), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Collab") + ylab("Sat") + facet_wrap(~region)
 
 # prep_A and region plot
 teacher_data %>% filter(!is.na(as.numeric(prep_A))) %>% ggplot(aes(x=as.numeric(prep_A), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_A") + ylab("Sat") + facet_wrap(~region)
 
-# prep_B and region LM
-lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data)
-
 # prep_B and region plot
 teacher_data %>% filter(!is.na(as.numeric(prep_B))) %>% ggplot(aes(x=as.numeric(prep_B), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_B") + ylab("Sat") + facet_wrap(~region)
-
-# prep_C and region LM
-lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data)
 
 # prep_C and region plot
 teacher_data %>% filter(!is.na(as.numeric(prep_C))) %>% ggplot(aes(x=as.numeric(prep_C), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_C") + ylab("Sat") + facet_wrap(~region)
 
-# age and region LM
-lm(sat_avg ~ region*as.numeric(age), data=teacher_data)
-
 # age and region plot
 teacher_data %>% filter(!is.na(as.numeric(age))) %>% ggplot(aes(x=as.numeric(age), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Age") + ylab("Sat") + facet_wrap(~region)
 
-# total_time and region LM
-lm(sat_avg ~ region*as.numeric(total_time), data=teacher_data)
-
 # total_time and region plot
 teacher_data %>% filter(!is.na(as.numeric(total_time))) %>% ggplot(aes(x=as.numeric(total_time), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Total Time Working") + ylab("Sat") + facet_wrap(~region)
-
-# years_working and region LM
-lm(sat_avg ~ region*as.numeric(years_teacher), data=teacher_data)
 
 # years_teacher and region plot
 teacher_data %>% filter(!is.na(as.numeric(years_teacher))) %>% ggplot(aes(x=as.numeric(years_teacher), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Years Working As Teacher") + ylab("Sat") + facet_wrap(~region)
