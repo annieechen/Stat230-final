@@ -28,7 +28,6 @@ library(ggmosaic)
 ```{r, include=FALSE}
 # To start, let's read in the cleaned datasets from our last submission:
 teacher_data <- read.csv("TALIS.csv")
-subject_data <- read.csv("subject_data.csv", as.is=TRUE)
 
 # Change column names of 10 satisfaction questions to make more readable
 satcols <- grep("TT2G46", colnames(teacher_data))
@@ -202,7 +201,7 @@ length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time)
 We can see that there are quite a few values of exactly 90, given the fact that the length of the vector where total_time is greater than or equal to 90 is so much longer than the vector that is strictly greater than 90.  Given this fact, we will keep the values of 90, but set all values that are higher than 90 hours a week to NA.
 
 ```{r, echo=TRUE}
-teacher_data[teacher_data$total_time < 90 & !is.na(teacher_data$total_time), "total_time"] <- NA
+teacher_data[teacher_data$total_time > 90 & !is.na(teacher_data$total_time), "total_time"] <- NA
 ```
 
 We can now take a look at reported age vs years teaching. 
@@ -229,11 +228,6 @@ Although our earlier plot of satisfaction against the degree of collaboration at
 ```
 
 
-(1) We are first going to run two linear regression models: one with all of the predictors in the dataset, and one with all of the predictors that have NA values in less than 5% of observations.
-(2) We are going to use forward, backward and bidirectional stepwise selection, and look at the linear models that end up getting chosen from those three methods.
-(3) We will then look at which predictors appeared to be the most significant in the linear models from (1) and (2).  
-
-
 
 ```{r}
 # In order to have easier control over which predictors to use in our model, below we create several lists of indices that we might want to include or exclude as a group
@@ -245,7 +239,7 @@ sat_indices <- satcols[satcols != which(colnames(teacher_data) == "sat_avg")]
 subject_names <- c("R_WR_Lit", "Math", "Science", "Soc_Studies", "Modern_Lang", "Ancient_Lang", "Tech", "Arts", "PE", "Rel_Ethics", "Practical", "Other")
 subject_indices <- c(which(colnames(teacher_data) %in% subject_names))
 
-# Some columns also have many more NA values, lets make a list of those so we can choose whether or not to include them in our linear models
+# Some columns also have many more NA values, lets make a list of the columns that have NA values in more than 10% of the data (this ends up being num_students and feedback_salary), that way we can choose whether or not to include them in our linear models
 na_cols <- c()
 for(i in 1:ncol(teacher_data)) {
   if(sum(is.na(teacher_data[,i]))/nrow(teacher_data) > 0.10) {
@@ -271,7 +265,7 @@ For our linear regression model, we are going to remove columns with a large num
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 ```
 
-Now, we are interested in how geography impacts teacher satisfaction, however we have two different geography variables.  We can't include both in the model, as they are linearly dependent, and R will only find a set of coefficients for one of the two variables if we put both in the model.  Because of this, let's try both and compare the results:
+One of the things we are interested in is how geography impacts teacher satisfaction, however we have two different geography variables.  We can't include both in the model, as they are linearly dependent, and R will only find a set of coefficients for one of the two variables if we put both in the model.  Because of this, let's try both and compare the results:
 
 Linear model using country:
 ```{r}
@@ -296,17 +290,20 @@ Lastly, it seems very possible that age and years_teacher are correlated, since 
 cor(teacher_data$age, teacher_data$years_teacher)
 ```
 
-We can see above that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age.
+We can see above that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off from teaching.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
 
 ```{r}
 teacher_data$age_start <- age_start
 teacher_data$age_ratio <- teacher_data$years_teacher/teacher_data$age
 ```
 
-We can take a look at the histogram of the age_start variable - perhaps when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off. 
+
 
 ```{r}
-as.data.frame(age_start) %>% ggplot(aes(x=age_start)) + geom_histogram(binwidth = 2) + labs(title="Histogram of Age When started teaching", x="Age (years) - Years working as a teacher", y="Count")
+teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
+teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
+teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
+teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
 ```
 
 Let's also make sure that the prep_A, prep_B, and prep_C predictors are not too highly correlated.
@@ -319,18 +316,21 @@ data <- data.frame(prep_A = as.numeric(teacher_data$prep_A),
 cor(data, use = "complete.obs")
 ```
 
+We can see from the correlation matrix above that all three prep questions are pretty correlated.  As a result, let's try creating a single predictor that's the average of all three, in order to indicate their overall feeling of how prepared they were.
 
 ```{r}
-#NOTE: SHOULD REALLY RECREATE ORIGINAL X, MIGHT GET SOME OLD DATA BACK...
-x.new <- teacher_data[, -c(sat_indices, na_cols, subject_indices)]
-x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region"))])
+teacher_data$avg_prep <- apply(data, 1, mean)
+```
+
+```{r}
+prep_indices <- grep("prep_", names(teacher_data))
+x.new <- teacher_data[, -c(sat_indices, na_cols, subject_indices, prep_indices)]
+x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age"))])
 ```
 
 Now let's see if all of the variables we have in our dataset are normally distributed, or if some transformations might be helpful:
 
 ```{r}
-#QUESTION: What is error I'm getting in second plot?
-#QUESTION: to justify doing transformations on predictors, do you use histogram of predictor, or graph of predictor against repsonse variable?
 x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
 ```
 We can see from the histogram of sat_avg above, that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
@@ -389,10 +389,6 @@ m.both.bic <- step(m.empty, scope=list(upper=m.full),
 We can see from the results above, that with AIC as the criterion, all three stepwise models resulted in using the same 9 predictors, which were: collab, country, prep_A, prep_B, prep_C, gender, age, total_time, and years_teacher.
 
 Using the BIC criterion, all three models ended up using all of the same predictors as the AIC stepwise models, except without prep_A.
-
-```{r}
-# m3 <- regsubsets(sat_avg ~ ., data=x, nbest=1, method="exhaustive")
-```
 
 NOTE: need conclusion to this section!!!
 
