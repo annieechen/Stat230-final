@@ -366,7 +366,7 @@ m_final <- lm(sat_avg ~ ., data=x.new)
 ```
 
 Before analyzing this model, let's make sure that the assumptions for linear regression hold.
-```{r, fig.height=5.5}
+```{r, fig.height=3}
 par(mfrow=c(1,2))
 plot(m_final, which=1)
 plot(m_final, which=2)
@@ -374,7 +374,7 @@ plot(m_final, which=2)
 
 Now let's analyze the coefficients of the model.  We can see from the summary of m_final, that a lot of the coefficients have statistically significant p-values.  However, this is somewhat expected given the large size of our dataset.  In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, let's look at the magnitude of the coefficients, and the confidence intervals of the coefficients and see how far away they are from zero.
 
-```{r}
+```{r, include=FALSE}
 confint(m_final)
 ```
 
@@ -390,9 +390,11 @@ Lastly, we can see that several of the countries have coefficients with pretty l
 
 ### Analysis for Research Question 2
 
-To address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors, we are going to try several techniques.
+Given how useful country was in predicting teacher_satisfaction, it would be interesting to see whether there are any significant regional differences in some of the other significant predictors from our linear model above.  For example, in the regions with higher teacher satisfaction, are collaboration ratings also higher? 
 
-First, we plot some maps to better visualize the teacher satisfaction across countries and by region
+Therefore, let's now address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors.
+
+First, we plot some maps to better visualize the teacher satisfaction across countries and by region.
 
 ```{r, warning=FALSE, include=FALSE}
 # set to ISO codes
@@ -448,28 +450,19 @@ Based on which predictors affected job satisfaction in Part 1, we can see which 
 p41 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, region), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
 # prep plot
-p42 <- teacher_data[, c("prep_A", "prep_B", "prep_C","region")] %>%
-  gather(-region, key = "var", value = "value") %>%
-    mutate(value = factor(value, levels = c("Very Well", "Well", "Somewhat", "Not at all"))) %>%
-  ggplot(aes(x = product(value,region), fill=factor(value))) + geom_mosaic() +
-    theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Prepared the Teacher felt') + guides(fill=guide_legend(title = "Response", reverse=TRUE)) + 
-    facet_wrap(~ var, scales = "free") 
+#p42 <- teacher_data[, c("avg_prep", "prep_B", "prep_C","region")] %>%
+#  gather(-region, key = "var", value = "value") %>%
+#    mutate(value = factor(value, levels = c("Very Well", "Well", "Somewhat", "Not at all"))) %>%
+#  ggplot(aes(x = product(value,region), fill=factor(value))) + geom_mosaic() +
+#    theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Prepared the #Teacher felt') + guides(fill=guide_legend(title = "Response", reverse=TRUE)) + 
+#    facet_wrap(~ var, scales = "free") 
 
-# gender plot
-p43 <- teacher_data %>% filter(!is.na(gender)) %>% ggplot(aes(x = product(gender, region), fill=factor(gender)), na.rm=TRUE) +  geom_mosaic()  +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='Gender') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p42 <- teacher_data %>% filter(!is.na(avg_prep)) %>% ggplot(aes(x=reorder(region, -avg_prep, median), y=avg_prep)) + geom_boxplot() + xlab("Region") + ylab("Average Feeling of Preparation")
 
-# age plot
-p44 <- teacher_data %>% filter(!is.na(age)) %>% ggplot(aes(x=reorder(region, -as.numeric(age), median), y=as.numeric(age))) + geom_boxplot() + xlab("Region") + ylab("Age")
-
-# total_time plot
-p45 <- teacher_data %>% filter(!is.na(total_time)) %>% ggplot(aes(x=reorder(region, -as.numeric(total_time), median), y=as.numeric(total_time))) + geom_boxplot() + xlab("Region") + ylab("Total Time Working")
-
-# age_start plot
-p46 <- teacher_data %>% filter(!is.na(age_start)) %>% ggplot(aes(x=reorder(region, -as.numeric(age_start), median), y=as.numeric(age_start))) + geom_boxplot() + xlab("Region") + ylab("Years not spent teaching")
 ```
 
-```{r, echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
-grid.arrange(p41, p42, p43, p44, p45, p46, ncol=2)
+```{r, echo=FALSE, fig.height=4, fig.width=7, message=FALSE, warning=FALSE}
+grid.arrange(p41, p42, ncol=2)
 ```
 
 
@@ -481,9 +474,6 @@ anova(lm(as.numeric(collab) ~ region, data=teacher_data))
 anova(lm(as.numeric(prep_A) ~ region, data=teacher_data))
 anova(lm(as.numeric(prep_B) ~ region, data=teacher_data))
 anova(lm(as.numeric(prep_C) ~ region, data=teacher_data))
-anova(lm(as.numeric(age) ~ region, data=teacher_data))
-anova(lm(as.numeric(total_time) ~ region, data=teacher_data))
-anova(lm(as.numeric(years_teacher) ~ region, data=teacher_data))
 ```
 
 It looks like all of the variables vary across regions.
@@ -502,38 +492,6 @@ lmpbreg <- lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data)
 
 # prep_C and region LM
 lmpcreg <- lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data)
-
-# age and region LM
-lmagereg <- lm(sat_avg ~ region*as.numeric(age), data=teacher_data)
-
-# total_time and region LM
-lmttreg <- lm(sat_avg ~ region*as.numeric(total_time), data=teacher_data)
-
-# years_working and region LM
-lmywreg <- lm(sat_avg ~ region*as.numeric(years_teacher), data=teacher_data)
-```
-
-```{r, fig.height=3}
-# Collab and region plot
-teacher_data %>% filter(!is.na(as.numeric(collab))) %>% ggplot(aes(x=as.numeric(collab), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Collab") + ylab("Sat") + facet_wrap(~region)
-
-# prep_A and region plot
-teacher_data %>% filter(!is.na(as.numeric(prep_A))) %>% ggplot(aes(x=as.numeric(prep_A), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_A") + ylab("Sat") + facet_wrap(~region)
-
-# prep_B and region plot
-teacher_data %>% filter(!is.na(as.numeric(prep_B))) %>% ggplot(aes(x=as.numeric(prep_B), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_B") + ylab("Sat") + facet_wrap(~region)
-
-# prep_C and region plot
-teacher_data %>% filter(!is.na(as.numeric(prep_C))) %>% ggplot(aes(x=as.numeric(prep_C), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("prep_C") + ylab("Sat") + facet_wrap(~region)
-
-# age and region plot
-teacher_data %>% filter(!is.na(as.numeric(age))) %>% ggplot(aes(x=as.numeric(age), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Age") + ylab("Sat") + facet_wrap(~region)
-
-# total_time and region plot
-teacher_data %>% filter(!is.na(as.numeric(total_time))) %>% ggplot(aes(x=as.numeric(total_time), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Total Time Working") + ylab("Sat") + facet_wrap(~region)
-
-# years_teacher and region plot
-teacher_data %>% filter(!is.na(as.numeric(years_teacher))) %>% ggplot(aes(x=as.numeric(years_teacher), y=as.numeric(sat_avg))) + geom_point(alpha=0.05) + xlab("Years Working As Teacher") + ylab("Sat") + facet_wrap(~region)
 ```
 
 #### One-way ANOVA Test
