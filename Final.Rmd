@@ -3,7 +3,7 @@ title: "Final Project"
 author: "Veena Advani, Annie Chen, Robert Tung"
 date: "Due 5/5/2017"
 output:
-  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
