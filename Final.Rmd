@@ -182,9 +182,8 @@ p3
 **Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our second research question, which revolves around variations in sat_avg and other variables across different geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore additional plots like this one, but with other variables, in our full analysis.
 
 ### Removal of Strange Values
-QUESTION: should we do this? strange years_teacher values, vs age, or in general, total_time spent per week etc.  Are these all rows we should get rid of???
 
-Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to remove these datapoints, since they are likely unreliable.
+Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to set these values to NA, since they are likely unreliable.
 
 The total time spent on teaching related activities per week:
 ```{r}
@@ -198,10 +197,10 @@ length(teacher_data[teacher_data$total_time>=90 & !is.na(teacher_data$total_time
 length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),]$total_time)
 ```
 
-We can see that there are quite a few values of exactly 90, given the fact that the length of the vector where total_time is greater than or equal to 90 is so much longer than the vector that is strictly greater than 90.  Given this fact, we will keep the values of 90, but set all values that are higher than 90 hours a week to NA, since it seems highly unlikely that any teacher is working more than 90 hours a week.
+We can see that there are quite a few values of exactly 90, given the fact that the length of the vector where total_time is greater than or equal to 90 is so much longer than the vector that is strictly greater than 90.  Given this fact, we will keep the values of 90, but set all values that are higher than 90 hours a week to NA.
 
 ```{r, echo=TRUE}
-teacher_data[teacher_data$total_time < 90,]$total_time <- NA
+teacher_data[teacher_data$total_time < 90 & !is.na(teacher_data$total_time), "total_time"] <- NA
 ```
 
 We can now take a look at reported age vs years teaching. 
@@ -213,21 +212,8 @@ We can see that there are points above the red line, which are teachers who repo
 
 ```{r, echo=TRUE}
 age_start <- teacher_data$age - teacher_data$years_teacher
-nrow(teacher_data[age_start <= 15,])
-teacher_data <- teacher_data[which(age_start >= 15),]
-```
-
-Now, because we can see from the above plot that age and years teaching are strongly positively correlated, we know that it doesn't make sense to include both of those as predictors. We can take a look at the histogram of the age_start variable - perhaps when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off. 
-
-```{r}
-as.data.frame(age_start) %>% ggplot(aes(x=age_start)) + geom_histogram(binwidth = 2) + labs(title="Histogram of Age When started teaching", x="Age (years) - Years working as a teacher", y="Count")
-```
-
-Now, let's add this column to our data frame, and remove the years_teaching variable
-
-```{r}
-teacher_data$years_teacher <- NULL
-teacher_data$age_start <- age_start
+nrow(teacher_data[age_start < 15 & !is.na(age_start),])
+teacher_data[age_start < 15 & !is.na(age_start), "years_teacher"] <- NA
 ```
 
 ### Analysis for Research Question 1
@@ -266,7 +252,7 @@ for(i in 1:ncol(teacher_data)) {
 }
 ```
 
-## added a small plot of numerical variables against sat_avg, in case we want justification for squaring something (I got improvements in r^2 when squaring total_time and years_teacher)
+
 ```{r}
 #teacher_data[, -c(sat_indices, na_cols, subject_indices,1, 37)] %>%
 #  gather(-sat_avg, -gender, key = "var", value = "value") %>%
@@ -302,6 +288,35 @@ summary(m_region)
 We can see from the two summaries, that a large amount of the country categories are significant, and all of the region categories are also significant.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1981.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model.
 
 We can also see that train_stat was not significant in either of the models, so let's also remove that from future models.
+
+Lastly, it seems very possible that age and years_teacher are correlated, since teachers that have been teaching for longer are likely to be older.  We can also see that they seem quite correlated from the plot earlier of age against years_teacher.  As a result, we probably don't need both predictors in our linear model.  Let's check the correlation:
+```{r}
+cor(teacher_data$age, teacher_data$years_teacher)
+```
+
+We can see above that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age.
+
+```{r}
+teacher_data$age_start <- age_start
+teacher_data$age_ratio <- teacher_data$years_teacher/teacher_data$age
+```
+
+We can take a look at the histogram of the age_start variable - perhaps when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off. 
+
+```{r}
+as.data.frame(age_start) %>% ggplot(aes(x=age_start)) + geom_histogram(binwidth = 2) + labs(title="Histogram of Age When started teaching", x="Age (years) - Years working as a teacher", y="Count")
+```
+
+Let's also make sure that the prep_A, prep_B, and prep_C predictors are not too highly correlated.
+
+```{r}
+data <- teacher_data[, grep("prep_", names(teacher_data))]
+data <- data.frame(prep_A = as.numeric(teacher_data$prep_A),
+                   prep_B = as.numeric(teacher_data$prep_B),
+                   prep_C = as.numeric(teacher_data$prep_C))
+cor(data, use = "complete.obs")
+```
+
 
 ```{r}
 #NOTE: SHOULD REALLY RECREATE ORIGINAL X, MIGHT GET SOME OLD DATA BACK...
