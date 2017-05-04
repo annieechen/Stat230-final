@@ -394,7 +394,7 @@ summary(m_final)$r.squared
 
 Before analyzing this model, let's make sure that the assumptions for linear regression hold.
 
-```{r, fig.height=2}
+```{r, fig.height=3}
 par(mfrow=c(1,2))
 plot(m_final, which=1)
 plot(m_final, which=2)
