@@ -165,7 +165,7 @@ p3
 
 ##### Removal of Unusual Values
 
-Before we analyze the data any further, we should clean up the data slightly more.  We previously cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  
+We previously cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  
 
 Let's look at the variable containing total time spent on teaching related activities per week:
 ```{r, fig.height=2.5, message=FALSE, warning=FALSE}
@@ -320,11 +320,7 @@ x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age
 
 Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:
 
-```{r, fig.height=2.5, warning=FALSE}
-x.new %>% ggplot(aes(x=sat_avg)) + geom_histogram(binwidth = 0.2) + labs(title="Histogram of Teacher Satisfaction", x="Teacher Satisfaction (low to high)", y="Count")
-```
-
-We can see from the histogram of sat_avg above, that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
+We can see from the histogram of sat_avg (Plot 1, displayed in the Dataset section), that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
 
 ```{r}
 h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() +
@@ -380,6 +376,9 @@ Looking at the confidence intervals of all of the predictors other than country,
 The collab and avg_prep predictors on the other hand, had coefficients with confidence intervals of roughly (0.55, 0.57) and (0.11, 0.12) respectively.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient of a magnitude around 0.5 seems pretty significant.  A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.
 
 Lastly, we can see that several of the countries have coefficients with pretty large magnitudes, and confidence intervals for those coefficients that are pretty far from zero.  For example, the confidence interval for the coefficient for countryMEX is (0.4494836350, 0.4990107641) and for countryFIN is (0.2306808115, 0.2792257572). In fact, 15 countries have coefficients with a magnitude of at least 0.1, and a confidence interval for that coefficient that is also at least 0.1 away from 0.  This suggests that country is also significant in predicting teacher satisfaction.
+
+Lastly, let's look at the sign of the coefficients in the model, to see the direction of the relationships between the predictors and sat_avg.  What is positively correlated with sat_avg? What is negatively correlated with sat_avg?  Do these directions make sense?:
+TODO
 
 **Conclusion:** The results of this linear model suggest that teachers perceptions of how collaborative the school culture is, as well as how prepared the teachers feel, are significant predictors for how satisfied teachers are.  Interestingly, although how prepared teachers felt was significant in predicting teacher satisfaction, the degree of teacher training was not.  It is possible that this is because it was a Yes or No question on the survey, and therefore we didn't have more information on the quantity or quality of training that teachers received, whereas teachers were able to rate how prepared they felt in several areas on a scale of "Not at all", "Somewhat", "Well", and "Very well".  Lastly, country was very useful in predicting teacher satisfaction.  This could be due to a variety of reasons, including cultural values and attitudes at work, school legislation and restrictions, funding of schools, the ratio of public to private schools, and the respect that the teaching profession receives, all of which vary between countries, and are environmental factors at the country level, rather than the kind of information available in a teacher survey.
 
