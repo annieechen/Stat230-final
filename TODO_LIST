@@ -5,7 +5,8 @@ p values
 R-squared
 
 Dataset Section:
-size of dataset: need rows and columns.
+
+need to add variables we created to description
 
 part 1: for assumptions of linear regression, need to write quick sentence below the plots saying things look good and why
 
@@ -55,5 +56,3 @@ pairwise t- test by region
 we did group countries into regions and did analysis by region, but felt that geographical grouping didn’t capture all the factors and we could be missing trends 
 take the most extreme satisfied and unsatisfied, look at factors there
 
-conclusion - we don’t know how many teachers were sampled comparatively by country - we know it was no more than 22 per school, but were unable to analyze how representative our sample was of a country as a whole
-in addition,  there were some country codes that were just cities - all our china teachers came from shanghai 
