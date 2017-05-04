@@ -159,9 +159,9 @@ p3
 
 **Plot 1** As we are later analyzing the effect of different variables on teacher satisfaction, and the variation between different regions, it is important to note the overall distribution of our response variable. 
 
-**Plot 2** provides a box plot of collab vs sat_avg. This plot is an example of one we would find in regard to our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. In looking at this particular plot, we can see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question, as well as more rigorous analysis.
+**Plot 2** provides a box plot of collab vs sat_avg. This plot helps  answerour first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. We can see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question.
 
-**Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our 2nd question, which revolves around variations in sat_avg and other variables across geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). We will explore more plots like this one, but with other variables, in our full analysis.
+**Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our 2nd question, which looks at variations in sat_avg and other variables across geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). 
 
 ##### Removal of Unusual Values
 
@@ -172,14 +172,14 @@ Let's look at the variable containing total time spent on teaching related activ
 teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
 ```
 
-We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is another dropoff after 60 hours/week, which is a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  If a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day) due to time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is physically possible, it seems highly unlikely except for in unusual situations like boarding school.  Given this fact, let's see how many teachers reported 90 hours a week or more.
+We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is another dropoff after 60 hours/week, which is a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  If a teacher worked from 6 am to 9 pm Monday to Friday (15 hours a day) from time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is physically possible, it seems highly unlikely except for in unusual situations like boarding school.  Given this fact, let's see how many teachers reported 90 hours a week or more.
 
 ```{r, echo=TRUE}
-length(teacher_data[teacher_data$total_time>=90 & !is.na(teacher_data$total_time),]$total_time)
-length(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),]$total_time)
+nrow(teacher_data[teacher_data$total_time==90 & !is.na(teacher_data$total_time),])
+nrow(teacher_data[teacher_data$total_time>90 & !is.na(teacher_data$total_time),])
 ```
 
-We can see that there are many more values of exactly 90 than greater than 90. Given this fact, we will keep the values of 90, but set all values that are higher than 90 hours a week to NA.
+We can see that there are many more values of exactly 90 than greater than 90. So we keep the values of 90, but set all values that are higher than 90 hours a week to NA.
 
 ```{r, echo=TRUE}
 teacher_data[teacher_data$total_time > 90 & !is.na(teacher_data$total_time), "total_time"] <- NA
