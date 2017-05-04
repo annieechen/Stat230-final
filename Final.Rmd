@@ -401,7 +401,7 @@ library(plyr); library(dplyr)
 sPDF <- joinCountryData2Map(country_avg, joinCode = "ISO3", nameJoinColumn = "country")
 ```
 
-```{r, fig.height=3, fig.width=9}
+```{r, fig.height=2.5, fig.width=9}
 par(mar=c(0.1, 0.1, 0.1, 0.1))
 mapParams <- mapCountryData(sPDF, nameColumnToPlot = "mean_satisfaction", colourPalette="terrain", oceanCol = "lightblue", missingCountryCol="gray", addLegend = FALSE)
 do.call( addMapLegend, c(mapParams, legendWidth=0.5, legendShrink=0.5))
