@@ -463,11 +463,9 @@ mapParams  <-mapCountryData(sPDF,
                )
 do.call(addMapLegendBoxes, c(mapParams, x='bottomleft',title="Region", cex=.5))
 ```
-We did find that the difference in mean satisfaction was still statistically significant (p-vale < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown below.
+We did find that the difference in mean satisfaction was still statistically significant (p-value < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown in the pairwise.t.test in the appendix.
 
-```{r}
-pairwise.t.test(teacher_data$sat_avg, teacher_data$region, p.adj="bonf")
-```
+We did all the analysis first by region. However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania)
 
 We did all the analysis below first by region. However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania), and decided to analyze that subset of countries.
 
@@ -475,30 +473,37 @@ We did all the analysis below first by region. However, we felt that geographica
 country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
 td_country <-teacher_data[teacher_data$country %in% c("SVK", "JPN", "SRB", "ROU", "MYS", "MEX"),]
 # remove unused factors
-td_country$country <- factor(td_country$country, levels=c("SVK", "JPN", "SRB", "ROU", "MYS", "MEX"))
-# reorder country factors from least to most satisfied
+td_country$country <- factor(td_country$country, levels=c("SVK", "JPN",  "SRB", "ROU", "MYS", "MEX"))
 ```
 
-Based on which predictors affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively, in those factors 
+Based on the predictors affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively, in those factors.
+Based on the predictors that affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively.
 
 ```{r}
 # collab plot
 p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
-# prep plot
-#p42 <- teacher_data[, c("avg_prep", "prep_B", "prep_C","region")] %>%
-#  gather(-region, key = "var", value = "value") %>%
-#    mutate(value = factor(value, levels = c("Very Well", "Well", "Somewhat", "Not at all"))) %>%
-#  ggplot(aes(x = product(value,region), fill=factor(value))) + geom_mosaic() +
-#    theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Prepared the #Teacher felt') + guides(fill=guide_legend(title = "Response", reverse=TRUE)) + 
-#    facet_wrap(~ var, scales = "free") 
+p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, country), fill=factor(prep_A)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the content of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
-p42 <- td_country %>% filter(!is.na(avg_prep)) %>% ggplot(aes(x=reorder(region, -avg_prep, median), y=avg_prep)) + geom_boxplot() + xlab("Region") + ylab("Average Feeling of Preparation")
+p43 <- td_country %>% filter(!is.na(prep_B)) %>% ggplot(aes(x = product(prep_B, country), fill=factor(prep_B)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the pedagogy of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
+p44 <- td_country %>% filter(!is.na(prep_C)) %>% ggplot(aes(x = product(prep_C, country), fill=factor(prep_C)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the classroom practice of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 ```
 
 ```{r, echo=FALSE, fig.height=4, fig.width=7, message=FALSE, warning=FALSE}
-grid.arrange(p41, p42, ncol=2)
+grid.arrange(p41, p42, p43, p44, ncol=2)
+```
+
+```{r}
+td_country %>%
+    filter(country == "MEX") %>%
+    ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot()
+    
+    
+    td_country %>% filter(country=="MEX") %>% ggplot(aes(x = product(sat10, collab), fill=factor(sat1)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+
+    
+plot(td_country[td_country$country == "MEX",]$collab, td_country[td_country$country == "MEX",]$sat_avg)
 ```
 
 
@@ -579,10 +584,15 @@ One area that our analysis would have benefited from other data sources would be
 
 
 ## Code Appendix
+Code Outputs
 
-First, here is the data cleaning code from the Data Exploration Assignment
+```{r}
+pairwise.t.test(teacher_data$sat_avg, teacher_data$region, p.adj="bonf")
+```
 
 
+
+Data Cleaning Code from Data Exploration.Rmd
 ```{r data_cleaning,eval=FALSE}
 # Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
 lower_second_data <- read.spss("SPSS_International/BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
