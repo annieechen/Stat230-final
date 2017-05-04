@@ -358,7 +358,8 @@ summary(m_final)$r.squared
 ```
 
 Before analyzing this model, let's make sure that the assumptions for linear regression hold.
-```{r, fig.height=3}
+
+```{r, fig.height=2}
 par(mfrow=c(1,2))
 plot(m_final, which=1)
 plot(m_final, which=2)
@@ -447,32 +448,44 @@ Based on the predictors that affected job satisfaction in Part 1, we can see whi
 
 ```{r}
 # collab plot
-p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaboratie school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
-p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, country), fill=factor(prep_A)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the content of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, country), fill=factor(prep_A)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the content of the subjects you teach?') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
 p43 <- td_country %>% filter(!is.na(prep_B)) %>% ggplot(aes(x = product(prep_B, country), fill=factor(prep_B)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the pedagogy of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
 p44 <- td_country %>% filter(!is.na(prep_C)) %>% ggplot(aes(x = product(prep_C, country), fill=factor(prep_C)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the classroom practice of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
+```
+
+```{r, echo=FALSE, fig.height=2, fig.width=7, message=FALSE, warning=FALSE}
+grid.arrange(p41, p42, ncol=2)
+```
+
+Looking at the first plot, there isn't really any trend, but Mexico jumps out as an outlier. It's the country with the highest teacher satisfaction, but almost 30% of teachers say their school isn't collaborative. Does this mean that collaboration doesn't matter as much to satisfaction in Mexico? We c
+
+```{r, fig.height=1}
+td_country %>%
+    filter(country == "MEX") %>% filter(!is.na(collab)) %>%
+    ggplot(aes(x=collab, y=sat_avg, col=country)) + geom_boxplot(varwidth=TRUE) + labs(title="School Collaboration vs Satisfaction in Mexico")
 
 ```
 
-```{r, echo=FALSE, fig.height=4, fig.width=7, message=FALSE, warning=FALSE}
-grid.arrange(p41, p42, p43, p44, ncol=2)
-```
+Teacher satisfaction is still correlated positively with teacher satisfaction in Mexico, so there must be some other factor that makes the average satisfaction in Mexico higher.
+
+Mexico is also an outlier in the second plot, where 30% of teachers did not feel prepared to teach their subject well Let's look at how prepared teachers felt vs how satisfied they were, in Mexico and Japan, a country with a similarly high percentage of unprepared teachers.
 
 ```{r}
 td_country %>%
-    filter(country == "MEX") %>%
-    ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot()
-    
-    
-    td_country %>% filter(country=="MEX") %>% ggplot(aes(x = product(sat10, collab), fill=factor(sat1)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
-
-    
-plot(td_country[td_country$country == "MEX",]$collab, td_country[td_country$country == "MEX",]$sat_avg)
+    filter(country == "MEX" |country=="JPN") %>%
+ggplot(aes(x=prep_A, y=sat_avg, col=country)) + geom_boxplot(varwidth = TRUE)
 ```
+
+Here, we see something unexpected: The teachers in Mexico who are most satisfied are those who don't feel prepared at all to teach their subject.
+
+*idk are there more things to say here*
+
+##### From here below, I don't know whether we need to include
 
 
 (3) Given that there appear to be differences by region from the plots above, let's see if these differences are statistically significant using an anova test.  We will then look at which variables from part (2) are significant when predicted with region. 
