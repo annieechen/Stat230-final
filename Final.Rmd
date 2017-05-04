@@ -401,7 +401,7 @@ library(plyr); library(dplyr)
 sPDF <- joinCountryData2Map(country_avg, joinCode = "ISO3", nameJoinColumn = "country")
 ```
 
-```{r, fig.height=2.5, fig.width=9}
+```{r, fig.height=2.5, fig.width=9, message=FALSE, warning=FALSE}
 par(mar=c(0.1, 0.1, 0.1, 0.1))
 mapParams <- mapCountryData(sPDF, nameColumnToPlot = "mean_satisfaction", colourPalette="terrain", oceanCol = "lightblue", missingCountryCol="gray", addLegend = FALSE)
 do.call( addMapLegend, c(mapParams, legendWidth=0.5, legendShrink=0.5))
@@ -410,6 +410,7 @@ do.call( addMapLegend, c(mapParams, legendWidth=0.5, legendShrink=0.5))
 Now, we plot the regions we categorized countries by, which we found using the World Health Organization data.
 
 ```{r, fig.height=3, fig.width=6, message=FALSE, warning=FALSE}
+par(mar=c(0.1, 0.1, 0.1, 0.1))
 country_region_pairs <- unique(teacher_data[c("country", "region")])
 #code for map with average teacher satisfaction by country
 sPDF <- joinCountryData2Map(country_region_pairs, joinCode = "ISO3", nameJoinColumn = "country")
@@ -417,10 +418,10 @@ mapParams  <-mapCountryData(sPDF,
                nameColumnToPlot = "region",
                colourPalette=c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3" ,"#A6D854" ,"#FFD92F","#B3B3B3"),
                 oceanCol = "lightblue", missingCountryCol="white",
-               addLegend = TRUE,
+               addLegend = FALSE,
                mapTitle = "WHO Regions"
                )
-#do.call(addMapLegendBoxes, c(mapParams, x='bottomleft',title="Region", cex=.5))
+do.call(addMapLegendBoxes, c(mapParams, x='bottomleft',title="Region", cex=.5))
 ```
 
 #### Plots
