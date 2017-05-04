@@ -1,0 +1,54 @@
+TODO:
+Dataset Section:
+size of dataset: need rows and columns.
+
+part 1: for assumptions of linear regression, need to write quick sentence below the plots saying things look good and why
+
+
+number plots, Figure 1, Figure 2 etc so we can refer to them
+
+put summaries in appendix, number those so we can refer to them
+summary(m_country)
+summary(m_region)
+summary(m_final)
+confint(m_final)
+numbered 1 through 4
+
+check assumptions for ANOVA stuff???
+add labels to all the graphs
+add variables we created to data section
+ask annie about skew in number of subjects taught
+need to analyze direction/sign of coefficients
+
+do we need sat_avg vs region plot if we have country map plot?
+
+need help with p42 plot
+
+for part 3 in question 2 —> should we do pairwise test?
+
+What is this section for?:
+# Collab and region LM
+lmcolreg <- lm(sat_avg ~ region*as.numeric(collab), data=teacher_data)
+# prep_A and region LM
+lmpareg <- lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data)
+# prep_B and region LM
+lmpbreg <- lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data)
+# prep_C and region LM
+lmpcreg <- lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data)
+
+for part 2, go back to 3 mosaic plots, prep A, B, C
+
+Why do we have anova tests in two sections of part 2????
+
+What does this sentence even mean?:
+“We will then look at which variables from part (2) are significant when predicted with region. “
+
+should we be doing things by region or country in part 2?
+we could pick a subset of countries —> getting diversity in satisfaction level
+pairwise t- test by region
+
+we did group countries into regions and did analysis by region, but felt that geographical grouping didn’t capture all the factors and we could be missing trends 
+take the most extreme satisfied and unsatisfied, look at factors there
+
+conclusion - we don’t know how many teachers were sampled comparatively by country - we know it was no more than 22 per school, but were unable to analyze how representative our sample was of a country as a whole
+in addition,  there were some country codes that were just cities - all our china teachers came from shanghai 
