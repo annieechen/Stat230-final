@@ -119,7 +119,7 @@ The variables we are using are:
 * `age (TT2G02):` Teacher Age (numeric variable)
 * `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
 * `train_stat (TT2G11):` Training level of teacher (factor variable)
-* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt (ordered factor variable, 4 levels)
+* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt with respect to 3 different areas of teaching, which were content, pedagogy and classroom practice respectively (ordered factor variable, 4 levels)
 * `avg_prep:` The average of each teachers responses for prep_A/B/C (numeric variable between 1 and 4)
 * `total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
 * `feedback_salary (TT2G30G):` Whether performance feedback influences salary (ordered factor variable, 4 levels)
@@ -171,12 +171,12 @@ p3
 
 Before we analyze the data any further, we should clean up the data slightly more.  In previous assignments, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  We have decided to set these values to NA, since they are likely unreliable.
 
-The total time spent on teaching related activities per week:
+Let's look at the variable containing total time spent on teaching related activities per week:
 ```{r, fig.height=2.5}
 teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() + labs(title="Histogram of Time Spent on Teaching Activities per Week", x="Time Spent on Teaching Activities (hrs/week)", y="Count")
 ```
 
-We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is also another pretty clear dropoff after 60 hours/week, which also seems like a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day) due to time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is a physically possible time commitment, it seems highly unlikely.  It is possible that edge cases such as teachers at boarding schools could claim this kind of time comittment, but other than unusual situations like that, more than 90 hours a week seems highly improbable.  Given this fact, let's see how many teachers reported spending 90 hours a week or more on teaching related activities.
+We can see from this histogram, that most teachers seem to have a 40 hour work week, which is a pretty typical time comittment.  There is also another pretty clear dropoff after 60 hours/week, which seems like a reasonable addition to the 40 hour workweek for teachers that spend a fair amount of time class planning and grading in the evenings.  We can also see that there are some teachers claiming to have spent over 90 hours per week on teaching related activities.  Even if a teacher worked from 6 am to 9 pm Monday through Friday (15 hours a day) due to time at school and grading in the evening, and another 15 hours of related teaching activities on the weekend such as class planning and grading, they would be at 90 hours in a week.  Although this is a physically possible time commitment, it seems highly unlikely.  It is possible that edge cases like teachers at boarding schools could claim this kind of time comittment, but other than unusual situations like that, more than 90 hours a week seems highly improbable.  Given this fact, let's see how many teachers reported spending 90 hours a week or more on teaching related activities.
 
 ```{r, echo=TRUE}
 length(teacher_data[teacher_data$total_time>=90 & !is.na(teacher_data$total_time),]$total_time)
@@ -194,7 +194,7 @@ We can now take a look at reported age vs years teaching.
 teacher_data %>% ggplot(aes(x=age, y=years_teacher)) + geom_point(alpha=0.5,shape=".") + geom_abline(intercept =0, slope=1, color="red") +  geom_abline(intercept = -15, slope=1, color="yellow")+  geom_jitter(shape=".") + labs(title="Reported Age vs Years Teaching", x="Age (years)", y="Years Teaching (years)")
 ```
 
-We can see that there are points above the red line, which are teachers who reported they had been teaching longer than they had been alive. Indeed, let's see how many responses reported years that would indicate that they had started teaching before age 15 (points above the yellow line), and remove those values.
+We can see that there are points above the red line, which are teachers who reported they had been teaching longer than they had been alive. Indeed, let's see how many responses reported years that would indicate that they had started teaching before age 15 (points above the yellow line), and set those values to NA.
 
 ```{r, echo=TRUE}
 age_start <- teacher_data$age - teacher_data$years_teacher
@@ -209,6 +209,8 @@ To address our first research question, and to try to identify which variables a
 #### Linear Regression Analysis
 Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look at a matrix of plots of the data, before diving into any linear regression models:
 ```{r}
+#TODO
+#years teacher plot?
 #ggpairs(teacher_data)
 ```
 
@@ -254,10 +256,10 @@ Linear model using region (summary has been left out for space):
 ```{r, echo=TRUE}
 # Try model with region variable and not country
 m_region <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("country"))])
-summary(m_country)$r.squared
+summary(m_region)$r.squared
 ```
 
-If one looks at the two summaries, one would see that a large amount of the country categories have significant p-values in the first model, and all of the region categories have significant p-values in the second model.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1981.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model.
+If one looks at the two summaries (Summaries 1 and 2 in the Appendix), one can see that a large amount of the country categories have significant p-values in the first model, and all of the region categories have significant p-values in the second model.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1983.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model.
 
 We can also see that train_stat was not significant in either of the models, so let's also remove that from future models.
 
@@ -267,20 +269,32 @@ Lastly, it seems very possible that age and years_teacher are correlated, since 
 cor(teacher_data$age, teacher_data$years_teacher, use = "complete.obs")
 ```
 
-This shows that age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are. Of course, if we interpret this variable directly as the age teachers start teaching, we are making an implicit assumption that they never took a break/time off from teaching.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
+Age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are.  For example, perhaps people who start teaching really late are more satisfied in their jobs, as they likely did a lot more research on what the teaching profession was like before making a large career change from their previous job.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
 
 ```{r}
 teacher_data$age_start <- age_start
 teacher_data$age_ratio <- teacher_data$years_teacher/teacher_data$age
 ```
 
-Now let's see whether our new predictors, or one of our older predictors, seems to have the clearest linear relationship with our response variable, sat_avg:
+Let's see whether these new predictors, or one of our older predictors, seems to have the clearest linear relationship with our response variable, sat_avg:
 
 ```{r, fig.height=3}
-plot1 <- teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05)
-plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05)
-plot3 <- teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05)
-plot4 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05)
+plot1 <- teacher_data %>% ggplot(aes(x=age, y=sat_avg)) + geom_point(alpha=0.05) + labs(title="Age vs Teacher Satisfaction", x="Age (years)", y="Teacher Satisfaction (low to high)")
+plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05) +
+  labs(title="Years Spent as a Teacher
+       vs Teacher Satisfaction",
+       x="Years Spent as a Teacher",
+       y="Teacher Satisfaction (low to high)")
+plot3 <- teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05) +
+  labs(title="Age at Start of Teaching Career
+       vs Teacher Satisfaction",
+       x="Age (years)",
+       y="Teacher Satisfaction (low to high)")
+plot4 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05) +
+  labs(title="Fraction of Life Spent Teaching
+       vs Teacher Satisfaction",
+       x="Fraction of Life Spent Teaching",
+       y="Teacher Satisfaction (low to high)")
 grid.arrange(plot1, plot2, plot3, plot4, ncol=2)
 ```
 
@@ -296,7 +310,7 @@ data <- data.frame(prep_A = as.numeric(teacher_data$prep_A),
 cor(data, use = "complete.obs")
 ```
 
-We can see from the correlation matrix above that all three prep questions are pretty correlated, and therefore we shouldn't put all three in our linear model.  As a result, let's try creating a single predictor that's the average of all three, in order to indicate their overall feeling of how prepared they were.
+We can see from the correlation matrix above that all three prep questions are pretty correlated, and therefore we shouldn't put all three in our linear model.  As a result, let's try creating a single predictor that's the average of all three, in order to indicate the overall feeling that teachers had of how prepared they were.
 
 ```{r}
 teacher_data$avg_prep <- apply(data, 1, mean)
@@ -344,7 +358,7 @@ h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() +
 grid.arrange(h1, h2, h3, h4, ncol = 2)
 ```
 
-Three of the plots above, although not perfectly normal, don't have a huge amount of skew.  In fact, the histogram for time spent on teaching related activities has very little skew.  As a result, we probably don't need to transform any of these variables.  The number of subjects histogram does have a lot of skew.  
+Three of the plots above, although not perfectly normal, don't have a huge amount of skew.  In fact, the histogram for time spent on teaching related activities has very little skew.  As a result, we probably don't need to transform any of these variables.  The number of subjects histogram does have a lot of skew.  However, we tried several different transformations, and none of them seemed to help much.  After the creating the model, we will look at the normalqq plot to make sure the normality assumption wasn't violated too significantly.
 
 Model without train_stat (summary removed from report for the sake of space):
 ```{r, echo=TRUE}
@@ -358,7 +372,7 @@ plot(m_final, which=1)
 plot(m_final, which=2)
 ```
 
-Now let's analyze the coefficients of the model.  We can see from the summary of m_final, that a lot of the coefficients have statistically significant p-values.  However, this is somewhat expected given the large size of our dataset.  In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, let's look at the magnitude of the coefficients, and the confidence intervals of the coefficients and see how far away they are from zero.
+Now let's analyze the coefficients of the model.  We can see from the summary of m_final (Summary 3 in Appendix), that a lot of the coefficients have statistically significant p-values.  However, this is somewhat expected given the large size of our dataset.  In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, we will look at the magnitude of the coefficients in the model summary and the confidence intervals of the coefficients (Summary 4 in Appendix) and see how far away they are from zero.
 
 ```{r, include=FALSE}
 confint(m_final)
@@ -372,7 +386,7 @@ The collab and avg_prep predictors on the other hand, had coefficients with conf
 
 Lastly, we can see that several of the countries have coefficients with pretty large magnitudes, and confidence intervals for those coefficients that are pretty far from zero.  For example, the confidence interval for the coefficient for countryMEX is (0.4494836350, 0.4990107641) and for countryFIN is (0.2306808115, 0.2792257572). In fact, 15 countries have coefficients with a magnitude of at least 0.1, and a confidence interval for that coefficient that is also at least 0.1 away from 0.  This suggests that country is also significant in predicting teacher satisfaction.
 
-**Conclusion:** The results of this linear model suggest that teachers perceptions of how collaborative the school culture is, as well as how prepared the teachers feel, are significant predictors for how satisfied teachers are.  Interestingly, although how prepared teachers felt was significant in predicting teacher satisfaction, the degree of teacher training was not.  It is possible that this is because it was a Yes or No question on the survey, and therefore we didn't have more information on the quantity or quality of training that teachers received, whereas teachers were able to rate how prepared they felt in several areas on a scale of "Not at all", "Somewhat", "Well", and "Very well".  Lastly, country was very useful in predicting teacher satisfaction.  This could be due to a variety of reasons, including cultural values and attitudes at work, school legislation and restrictions, funding of schools, the ratio of public to private schools, and the respect that the teaching profession receives, all of which vary between countries.
+**Conclusion:** The results of this linear model suggest that teachers perceptions of how collaborative the school culture is, as well as how prepared the teachers feel, are significant predictors for how satisfied teachers are.  Interestingly, although how prepared teachers felt was significant in predicting teacher satisfaction, the degree of teacher training was not.  It is possible that this is because it was a Yes or No question on the survey, and therefore we didn't have more information on the quantity or quality of training that teachers received, whereas teachers were able to rate how prepared they felt in several areas on a scale of "Not at all", "Somewhat", "Well", and "Very well".  Lastly, country was very useful in predicting teacher satisfaction.  This could be due to a variety of reasons, including cultural values and attitudes at work, school legislation and restrictions, funding of schools, the ratio of public to private schools, and the respect that the teaching profession receives, all of which vary between countries, and are environmental factors at the country level, rather than the kind of information available in a teacher survey.
 
 ### Analysis for Research Question 2
 
@@ -452,7 +466,7 @@ grid.arrange(p41, p42, ncol=2)
 ```
 
 
-(3) We will then look at which variables from part (2) are significant when predicted with region. If any are statistically significant, we will graph sat_avg as a function of that variable for each region.
+(3) Given that there appear to be differences by region from the plots above, let's see if these differences are statistically significant using an anova test.  We will then look at which variables from part (2) are significant when predicted with region. 
 
 ```{r}
 # Check which variables have a significant correlation with region
@@ -469,13 +483,10 @@ Linear model summaries removed from below for space.
 ```{r, echo=TRUE}
 # Collab and region LM
 lmcolreg <- lm(sat_avg ~ region*as.numeric(collab), data=teacher_data)
-
 # prep_A and region LM
 lmpareg <- lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data)
-
 # prep_B and region LM
 lmpbreg <- lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data)
-
 # prep_C and region LM
 lmpcreg <- lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data)
 ```
