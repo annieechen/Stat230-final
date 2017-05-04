@@ -397,7 +397,7 @@ Given how useful country was in predicting teacher_satisfaction, it would be int
 
 Therefore, let's now address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors.
 
-First, we plot some maps to better visualize the teacher satisfaction across countries and by region.
+First, lets look at a map of average teacher satisfaction by country.
 
 ```{r, warning=FALSE, include=FALSE}
 # set to ISO codes
@@ -416,7 +416,7 @@ mapParams <- mapCountryData(sPDF, nameColumnToPlot = "mean_satisfaction", colour
 do.call( addMapLegend, c(mapParams, legendWidth=0.5, legendShrink=0.5))
 ```
 
-Now, we plot the regions we categorized countries by, which we found using the World Health Organization data.
+When we first began analyzing factors by country, we grouped the countries into 8 regions using the World Health Organization geographical categories, like below. 
 
 ```{r, fig.height=3, fig.width=6, message=FALSE, warning=FALSE}
 par(mar=c(0.1, 0.1, 0.1, 0.1))
@@ -432,29 +432,29 @@ mapParams  <-mapCountryData(sPDF,
                )
 do.call(addMapLegendBoxes, c(mapParams, x='bottomleft',title="Region", cex=.5))
 ```
-
-#### Plots
-
-(1) We are first going to plot sat_avg vs region, using the region variable as a factor. This will visually tell us whether there might be a significant difference in satisfaction across regions.
-
-```{r, fig.height=2.5}
-## p3, used as an example plot earlier in this write-up, is a plot of sat_avg vs region
-## will fix labels once we figure out how big it can be in the final writeup
-p3
-```
-
-As we stated above, visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). However, we would classify each region's average as "satisfied", as it falls above 2.5
+We did find that the difference in mean satisfaction was still statistically significant (p-vale < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown below.
 
 ```{r}
 pairwise.t.test(teacher_data$sat_avg, teacher_data$region, p.adj="bonf")
 ```
 
+We did all the analysis below first by region. However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania)
 
-Based on which predictors affected job satisfaction in Part 1, we can see which regions stand out, either positively or negatively, in those factors 
+```{r, echo=TRUE}
+country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
+td_country <-teacher_data[teacher_data$country %in% c("SVK", "JPN", "SRB", "ROU", "MYS", "MEX"),]
+# remove unused factors
+td_country$country <- factor(td_country$country, levels=c("SVK", "JPN", "SRB", "ROU", "MYS", "MEX"))
+# reorder country factors from least to most satisfied
+```
+
+
+
+Based on which predictors affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively, in those factors 
 
 ```{r}
 # collab plot
-p41 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, region), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How Collaborative is School Culture') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
 # prep plot
 #p42 <- teacher_data[, c("avg_prep", "prep_B", "prep_C","region")] %>%
@@ -464,7 +464,7 @@ p41 <- teacher_data %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab
 #    theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Region", title='How Prepared the #Teacher felt') + guides(fill=guide_legend(title = "Response", reverse=TRUE)) + 
 #    facet_wrap(~ var, scales = "free") 
 
-p42 <- teacher_data %>% filter(!is.na(avg_prep)) %>% ggplot(aes(x=reorder(region, -avg_prep, median), y=avg_prep)) + geom_boxplot() + xlab("Region") + ylab("Average Feeling of Preparation")
+p42 <- td_country %>% filter(!is.na(avg_prep)) %>% ggplot(aes(x=reorder(region, -avg_prep, median), y=avg_prep)) + geom_boxplot() + xlab("Region") + ylab("Average Feeling of Preparation")
 
 ```
 
