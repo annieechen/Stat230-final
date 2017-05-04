@@ -52,12 +52,12 @@ teacher_data$num_subjects <- rowSums(teacher_data[,subject_indices], na.rm=TRUE)
 # We discussed in our dataset submission why we weren't going to use their teacher satisfaction variable, and we are instead going to use the average of the 10 satisfaction questions, as a result, let's remove the teacher satisfaction variable:
 teacher_data <- teacher_data[, -which(names(teacher_data) %in% c("satisfaction"))]
 
-# A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Given that these categories do have a natural ordering, we're going to convert them into ordered factors.
-teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
-teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
-teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somewhat", "Well", "Very well"), ordered=TRUE)
-teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("No positive change", "A small change", "A moderate change", "A large change"), ordered=TRUE)
-teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"), ordered=TRUE)
+# A lot of the variables stored as categorical variables with the categories "Strongly Disagree", "Disagree", "Strongly Agree", and "Agree", are currently factors.  Let's change the ordering to go from low to high.
+teacher_data$prep_A <- factor(teacher_data$prep_A, levels=c("Not at all", "Somewhat", "Well", "Very well"))
+teacher_data$prep_B <- factor(teacher_data$prep_B, levels=c("Not at all", "Somewhat", "Well", "Very well"))
+teacher_data$prep_C <- factor(teacher_data$prep_C, levels=c("Not at all", "Somewhat", "Well", "Very well"))
+teacher_data$feedback_salary <- factor(teacher_data$feedback_salary, levels=c("No positive change", "A small change", "A moderate change", "A large change"))
+teacher_data$collab <- factor(teacher_data$collab, levels=c("Strongly disagree", "Disagree", "Agree", "Strongly agree"))
 
 # We'll split the country data into regions using the World Health Organization  categories, so that we can try to find regional patterns
 
@@ -322,7 +322,7 @@ Now let's see if all of the variables that we've decided to use for the linear m
 
 We can see from the histogram of sat_avg (Plot 1, displayed in the Dataset section), that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. Additionally, after we have a final model, we can check the qqnorm plot to make sure none of the normality assumptions are drastically violated.
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() +
   labs(title="Histogram of Time Spent on
        Teaching Activities",
@@ -354,6 +354,7 @@ Three of the plots above, although not perfectly normal, don't have a huge amoun
 Model without train_stat (summary removed from report for the sake of space):
 ```{r, echo=TRUE}
 m_final <- lm(sat_avg ~ ., data=x.new)
+summary(m_final)$r.squared
 ```
 
 Before analyzing this model, let's make sure that the assumptions for linear regression hold.
@@ -363,7 +364,12 @@ plot(m_final, which=1)
 plot(m_final, which=2)
 ```
 
-Now let's analyze the coefficients of the model.  We can see from the summary of m_final (Summary 3 in Appendix), that a lot of the coefficients have statistically significant p-values.  However, this is somewhat expected given the large size of our dataset.  In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, we will look at the magnitude of the coefficients in the model summary and the confidence intervals of the coefficients (Summary 4 in Appendix) and see how far away they are from zero.
+We can see from the two plots above that there are no trends in the residuals, and the Normal Q-Q plot is close to a straight line, so our assumptions hold.
+
+General Analysis of the Final Linear Model:
+Looking at the model summary (Summary 3 in Appendix), our final linear model has an R-squared value of 0.24.  Many of the countries have coefficients with significant p-values, and all of the other predictors have coefficients with significant p-values at a level of 0.001.  However, this is not that surprising given how large our dataset is.  We might be able to get more insight by analyzing the values of the coefficients.
+
+In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, we will look at the magnitude of the coefficients in the model summary and the confidence intervals of the coefficients (Summary 4 in Appendix) and see how far away they are from zero.
 
 ```{r, include=FALSE}
 confint(m_final)
@@ -371,9 +377,9 @@ confint(m_final)
 
 The largest coefficients in the model in terms of magnitude were: collab.L, countryMEX, countryFIN, countryBFL, countryMYS, and countryNLD.  All the other coefficients had magnitudes that were less than 0.2.
 
-Looking at the confidence intervals of all of the predictors other than country, we can see that the confidence interval for the coefficient of num_subjects is pretty close to zero (it has a range of 0.0017 to 0.0054).  The confidence interval for the coefficient gender is also pretty close to zero, with a range of -0.027 to -0.016.  Two of the confidence intervals closest to zero are for the coefficient of years_teacher (0.00045, 0.00095) and the coefficient for total_time (-0.00063,-0.00031).  Given the small magnitudes of the confidence intervals of these four predictors, they do not seem that significant in predicting teacher satisfaction.
+Looking at the confidence intervals of all of the predictors other than country, we can see that the confidence interval for the coefficient of num_subjects is pretty close to zero (it has a range of 0.0017 to 0.0054).  The confidence interval for the coefficient gender is also pretty close to zero, with a range of -0.027 to -0.016.  Lastly, two of the confidence intervals closest to zero are for the coefficient of years_teacher (0.00045, 0.00095) and the coefficient for total_time (-0.00063,-0.00031).  Given the small magnitudes of the coefficients, and how close the confidence intervals of these four predictors are to zero, they do not seem that significant in predicting teacher satisfaction.
 
-The collab and avg_prep predictors on the other hand, had coefficients with confidence intervals of roughly (0.55, 0.57) and (0.11, 0.12) respectively.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient of a magnitude around 0.5 seems pretty significant.  A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.
+On the other hand, the coefficients for collab.L and avg_prep had confidence intervals of roughly (0.55, 0.57) and (0.11, 0.12) respectively.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient for one of the categories of the collab variable with a magnitude of around 0.5 seems pretty significant.  A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.
 
 Lastly, we can see that several of the countries have coefficients with pretty large magnitudes, and confidence intervals for those coefficients that are pretty far from zero.  For example, the confidence interval for the coefficient for countryMEX is (0.4494836350, 0.4990107641) and for countryFIN is (0.2306808115, 0.2792257572). In fact, 15 countries have coefficients with a magnitude of at least 0.1, and a confidence interval for that coefficient that is also at least 0.1 away from 0.  This suggests that country is also significant in predicting teacher satisfaction.
 
