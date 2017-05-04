@@ -436,6 +436,11 @@ p3
 
 As we stated above, visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). However, we would classify each region's average as "satisfied", as it falls above 2.5
 
+```{r}
+pairwise.t.test(teacher_data$sat_avg, teacher_data$region, p.adj="bonf")
+```
+
+
 Based on which predictors affected job satisfaction in Part 1, we can see which regions stand out, either positively or negatively, in those factors 
 
 ```{r}
