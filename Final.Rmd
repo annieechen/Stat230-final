@@ -466,9 +466,7 @@ grid.arrange(p41, p42, ncol=2)
 ```{r}
 # Check which variables have a significant correlation with region
 anova(lm(as.numeric(collab) ~ region, data=teacher_data))
-anova(lm(as.numeric(prep_A) ~ region, data=teacher_data))
-anova(lm(as.numeric(prep_B) ~ region, data=teacher_data))
-anova(lm(as.numeric(prep_C) ~ region, data=teacher_data))
+anova(lm(as.numeric(avg_prep) ~ region, data=teacher_data))
 ```
 
 It looks like all of the variables vary across regions.
