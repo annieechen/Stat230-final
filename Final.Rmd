@@ -101,7 +101,7 @@ teacher_data$region <- as.factor(teacher_data$region)
   
   (2) Our 2nd question is: How does teacher satisfaction, and some of the significant predictors found from question 1, vary by country?
 
-Given that one of the reasons the TALIS dataset was created was to enable cross country comparison, we thought it would be interesting to look at how some of the variables in the dataset varied by country. This question is also motivated by the fact that looking at how teacher satisfaction varies by region could be particularly helpful to educators and policy makers. There are a lot of environmental factors that can affect teacher satisfaction, and that are not addressed in the TALIS questionnaire.  However, if we can identify which countries have particularly satisfied teachers, then perhaps people who are looking to increase teacher satisfaction can learn something by further researching how schools work in those countries, past the information covered in the questionnaire. Additionally, if we are able to identify any variables that are paritcularly helpful in predicting teacher satisfaction (from research question 1), it would be interesting to see if the countries that have a higher average teacher satisfaction, also have values for those significant variables that were predictive of high satisfaction. Or in other words, after identifying qualities that seem to correlate with high teacher satisfaction, do the more satisfied countries seem to have those qualitites? Or does it seem like other factors, that are possibly not in the data set, are contributing to the higher levels of teacher satisfaction in those countries?
+Given that one of the reasons the TALIS dataset was created was to enable cross country comparison, we thought it would be interesting to look at how some of the variables in the dataset varied by country. This question is also motivated by the fact that looking at how teacher satisfaction varies by region could be particularly helpful to educators and policy makers. There are a lot of environmental factors that can affect teacher satisfaction, and that are not addressed in the TALIS questionnaire.  However, if we can identify which countries have particularly satisfied teachers, then perhaps people who are looking to increase teacher satisfaction can learn something by further researching how schools work in those countries, past the information covered in the questionnaire. Additionally, if we are able to identify any variables that are particularly helpful in predicting teacher satisfaction (from research question 1), it would be interesting to see if the countries that have a higher average teacher satisfaction, also have values for those significant variables that were predictive of high satisfaction. Or in other words, after identifying qualities that seem to correlate with high teacher satisfaction, do the more satisfied countries seem to have those qualitites? Or does it seem like other factors, that are possibly not in the data set, are contributing to the higher levels of teacher satisfaction in those countries?
 
 ### Data
 
@@ -496,6 +496,8 @@ msatreg <- lm(sat_avg ~ region, data=teacher_data)
 
 # ANOVA of regression
 anova(msatreg)
+
+## insert pairwise t-test with adjustment
 ```
 
 We will also see if there are statistically significant variances across regions in any of the significant predictors from part (1) that were particularly predictive of teacher satisfaction.
