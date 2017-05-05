@@ -110,10 +110,11 @@ Each row of the dataset corresponds to single teacher's response to the question
 After picking a subset of those columns and creating some of our own, we were left with 40 columns, resulting in a dataset that has 117876 rows and 40 columns. The variables we are using are:
 
 * `country (CNTRY):` Country of teacher (factor variable, 36 levels)
-* `region:` Region the teacher's country is in (factor variable, 8 levels)
+* `region:` Region the teacher's country is in, based on World Health Organization regions (factor variable, 8 levels)
 * `gender (TT2G01):` Teacher Gender (factor variable, 2 levels)
 * `age (TT2G02):` Teacher Age (numeric variable)
 * `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
+* `age_ratio:` years_teacher divided by age, or in other words, fraction of life spent teaching (numeric variable)
 * `train_stat (TT2G11):` Training level of teacher (factor variable)
 * `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt with respect to 3 different areas of teaching, which were content, pedagogy and classroom practice respectively (ordered factor variable, 4 levels)
 * `avg_prep:` The average of each teachers responses for prep_A/B/C (numeric variable between 1 and 4)
@@ -206,26 +207,21 @@ teacher_data[age_start < 15 & !is.na(age_start), "years_teacher"] <- NA
 To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to create a linear model.
 
 Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look several more plots of the data against our response variable, before diving into any linear regression models:
-```{r, fig.height=2, message=FALSE, warning=FALSE}
-plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + 
-  geom_boxplot() +
-  labs(title="Teacher Training Status
-       vs Teacher Satisfaction",
-       x="Teacher Training Status",
-       y="Teacher Satisfaction (low to high)") +
-  theme(axis.text=element_text(size=6),
-        axis.title=element_text(size=6),
-        plot.title=element_text(size=8))
+
+```{r, fig.height=2, fig.width=9, message=FALSE, warning=FALSE}
+plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + geom_boxplot() + labs(title="Teacher Training Status vs Teacher Satisfaction", y="Teacher Satisfaction (low to high)")
 plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05) +
   labs(title="Years Spent as a Teacher
        vs Teacher Satisfaction",
-       x="Years Spent as a Teacher",
-       y="Teacher Satisfaction (low to high)") +
-  theme(axis.text=element_text(size=6),
-        axis.title=element_text(size=6),
-        plot.title=element_text(size=8))
+       x="Years Spent as a Teacher", y="")
+plot3 <- teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=prep_A, y=sat_avg)) + geom_boxplot() + labs(title="Preparation vs Satisfaction", x="Prepared for the Content I Teach", y="")
 
-grid.arrange(plot1, plot2, ncol=2)
+#plot4 <- teacher_data %>% ggplot(aes(x=prep_C, y=sat_avg)) + geom_boxplot() +
+#  labs(title="Sense of Preparation for Classroom
+#       Practice vs Teacher Satisfaction",
+#       x="Degree of Preparedness for Classroom Practice (self reported)",
+#       y="Teacher Satisfaction (low to high)")
+grid.arrange(plot1, plot2, plot3, ncol=3)
 ```
 
 
@@ -442,17 +438,17 @@ mapParams1 <- mapCountryData(sPDF1, nameColumnToPlot = "mean_satisfaction", colo
 do.call( addMapLegend, c(mapParams1, legendWidth=0.5, legendShrink=0.5))
 ```
 
-When we first began analyzing factors by country, we grouped the countries into 8 regions using the World Health Organization geographical categories and that the difference in mean satisfaction was still statistically significant (p-value < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown in the pairwise.t.test in the appendix.
-
 Below is also an anova test showing the significance of the difference in satisfaction by region.
 
-```{r, echo=TRUE}
+```{r}
 # Regression of sat_avg vs region
-msatreg <- lm(sat_avg ~ region, data=teacher_data)
+msatreg <- lm(sat_avg ~ country, data=teacher_data)
 
 # ANOVA of regression
 anova(msatreg)
 ```
+
+When we first began analyzing factors by country, we grouped the countries into 8 regions using the World Health Organization geographical categories. The difference in mean satisfaction was still statistically significant (p-value < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown in the pairwise.t.test in the appendix.
 
 However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania), and decided to analyze that subset of countries.
 
@@ -474,12 +470,12 @@ p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, 
 grid.arrange(p41,p42, ncol=2)
 ```
 
-Indeed, from an anova we can see that collab and avg_prep are themselves significant in variation by region.
+Indeed, from an anova we can see that collab and avg_prep are themselves significant in variation by country.
 
 ```{r}
 # Check which variables have a significant correlation with region
-anova(lm(as.numeric(collab) ~ region, data=teacher_data))
-anova(lm(as.numeric(avg_prep) ~ region, data=teacher_data))
+anova(lm(as.numeric(collab) ~ country, data=teacher_data))
+anova(lm(as.numeric(avg_prep) ~ country, data=teacher_data))
 ```
 
 Looking at the first plot, there isn't really any trend, but Mexico jumps out as an outlier. It's the country with the highest teacher satisfaction, but almost 30% of teachers say their school isn't collaborative. Does this mean that collaboration doesn't matter as much to satisfaction in Mexico? We c
