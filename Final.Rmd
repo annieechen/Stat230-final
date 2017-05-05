@@ -478,7 +478,7 @@ anova(lm(as.numeric(collab) ~ country, data=teacher_data))
 anova(lm(as.numeric(avg_prep) ~ country, data=teacher_data))
 ```
 
-Looking at the first plot, there isn't really any trend, but Mexico jumps out as an outlier. It's the country with the highest teacher satisfaction, but almost 30% of teachers say their school isn't collaborative. Does this mean that collaboration doesn't matter as much to satisfaction in Mexico? We c
+Looking at the first plot, there isn't really any trend, but Mexico jumps out as an outlier. It's the country with the highest teacher satisfaction, but almost 30% of teachers say their school isn't collaborative. Does this mean that collaboration doesn't matter as much to satisfaction in Mexico?
 
 ```{r, fig.height=2}
 td_country %>%
@@ -487,9 +487,9 @@ td_country %>%
 
 ```
 
-Teacher satisfaction is still correlated positively with teacher satisfaction in Mexico, so there must be some other factor that makes the average satisfaction in Mexico higher.
+Teacher satisfaction is still correlated positively with teacher satisfaction in Mexico, so there must be some other factor that makes the average satisfaction in Mexico higher, other than having a higher level of collaboration.
 
-Mexico is also an outlier in the second plot, where 30% of teachers did not feel prepared to teach their subject well.
+Interestingly, Mexico is also an outlier in the second plot, where 30% of teachers did not feel prepared to teach their subject well.
 
 The takeaway is that although there are predictors that correlate positively with higher teacher satisfaction, like collaborative schools, and countries that have significantly higher teacher satisfaction than others, like Mexico, the countries with more satisfied teachers don't necessarily have the most collaborative schools. Teacher satisfaction is complex, and we have explored a very small part of the picture.
 
@@ -497,9 +497,9 @@ The takeaway is that although there are predictors that correlate positively wit
 
 Overall, our models didn't completely explain the variation in the data. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so we were pleased with the observations we did find.
 
-The first thing we were worried about in this project was how satisfaction was related to the different factors, and as mentioned previously it seems that the most significant factors by linear model coefficient were collab.L and avg_prep. Moreover, we noted that many of the country coefficients were very large, implying a large amount of variation between the satisfaction averages across countries.
+The first thing we were worried about in this project was how satisfaction was related to the different factors, and as mentioned previously it seems that the most significant factors by linear model coefficient were collab, avg_prep, and country. In fact, we noted that many of the country coefficients were very large, implying that satisfaction varies quite a bit by country.
 
-This brings us to our second research question, which addressed how various factors changed across countries. We first confirmed the above finding with a graph of satisfaction for each country, and supported this with an anova. Then, we also noted that some of the factors that were important to satisfaction, in particular level of collaboration and amount of preparation were themselves also significantly different across countries. And in fact, in addition to noting that these factors themselves varied across countries, we showed that the relationship of these factors (in particular the relationship of preparation level to satisfaction) also varied by country.
+This brings us to our second research question, which addressed how various factors changed across countries. We first confirmed the above finding with a graph of satisfaction for each country, and supported this with an anova. Then, we also noted that some of the factors that were important to satisfaction, in particular level of collaboration and amount of preparation were themselves also significantly different across countries. 
 
 Before we started looking into the data, we expected there to be a lot more unsatisfied teachers than there actually were. Indeed, if we take `sat_avg` scores of above 2.5 to mean that the respondent is generally satisfied (if on average, they responded Agree or Strongly Agree more than Disagree or Strongly Disgree on the teacher satisfaction questions), then
 
@@ -507,13 +507,13 @@ Before we started looking into the data, we expected there to be a lot more unsa
 nrow(teacher_data[teacher_data$sat_avg >=2.5,])/nrow(teacher_data)
 ```
 
-of our respondents were satisfied. Of course, this is a very low baseline (it just means the teacher didn't respond "Agree" or "Strongly Agree" to a question like "I regret that I decided to become a teacher.") If we were to collect the data particularly to understand how various factors affect teacher satisfication, we would want to get a more precise sense of how satisfied or unsatisfied teachers are about specific aspects of teaching. We might ask respondents to our survey to rate, on a scale from 1 - 10, their satisfaction with things like working conditions, pay, sense of impact, and more. 
+of our respondents were satisfied. Of course, this is a very low baseline (it just means the teacher didn't respond "Agree" or "Strongly Agree" to a question like "I regret that I decided to become a teacher.") If we were to collect data specifically to understand how various factors affect teacher satisfication, we would want to get a more precise sense of how satisfied or unsatisfied teachers are about specific aspects of teaching. We might ask respondents to our survey to rate, on a scale from 1 - 10, their satisfaction with things like working conditions, pay, sense of impact, and more. 
 
 As another problem, we don’t know how many teachers were sampled comparatively by country - we know it was no more than 22 per school, but were unable to analyze how representative our sample was of a country as a whole. In addition, there were some country codes that were just cities (e.g. all our china teachers came from Shanghai).
 
-As far as concerns about the data, when we did our data cleaning, we did find some suspicious responses. There were things we could say were impossible, such as working longer than one has been alive, but we could have other incorrectly reported responses that we weren't  able to immediately mark as suspicious. Because all of the data was a self reported survey, inaccurate/falsely reported answers were pretty inevitable, but are still a concern about the data.
+As far as concerns about the data, when we did our data cleaning, we did find some suspicious responses. There were things we could say were impossible, such as working longer than one has been alive, but we could have other incorrectly reported responses that we weren't able to immediately mark as suspicious. Because all of the data was a self reported survey, inaccurate/falsely reported answers were pretty inevitable, and are still a concern about the data.
 
-One area that our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, so that it was easier to visualize and interpret our results by group of countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a satistically significant difference.
+One area where our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, so that it was easier to visualize and interpret our results by group of countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a satistically significant difference.
 
 ### Code Appendix
 Code Outputs
