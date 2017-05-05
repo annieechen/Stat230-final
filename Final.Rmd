@@ -548,6 +548,7 @@ confint(m_final)
 ```
 
 Data Cleaning Code from Data Exploration.Rmd
+
 ```{r data_cleaning,eval=FALSE}
 # Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
 lower_second_data <- read.spss("SPSS_International/BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
