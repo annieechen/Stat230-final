@@ -489,15 +489,7 @@ td_country %>%
 
 Teacher satisfaction is still correlated positively with teacher satisfaction in Mexico, so there must be some other factor that makes the average satisfaction in Mexico higher.
 
-Mexico is also an outlier in the second plot, where 30% of teachers did not feel prepared to teach their subject well Let's look at how prepared teachers felt vs how satisfied they were, in Mexico and Japan, a country with a similarly high percentage of unprepared teachers.
-
-```{r}
-td_country %>%
-    filter(country == "MEX" |country=="JPN") %>%
-ggplot(aes(x=prep_A, y=sat_avg, col=country)) + geom_boxplot(varwidth = TRUE)
-```
-
-Here, we see something unexpected: The teachers in Mexico who are most satisfied are those who don't feel prepared at all to teach their subject.
+Mexico is also an outlier in the second plot, where 30% of teachers did not feel prepared to teach their subject well.
 
 The takeaway is that although there are predictors that correlate positively with higher teacher satisfaction, like collaborative schools, and countries that have significantly higher teacher satisfaction than others, like Mexico, the countries with more satisfied teachers don't necessarily have the most collaborative schools. Teacher satisfaction is complex, and we have xploed a very small part of the picture.
 
