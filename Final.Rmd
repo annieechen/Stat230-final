@@ -109,24 +109,24 @@ Each row of the dataset corresponds to single teacher's response to the question
 
 After picking a subset of those columns and creating some of our own, we were left with 40 columns, resulting in a dataset that has 117876 rows and 40 columns. The variables we are using are:
 
-* `country (CNTRY):` Country of teacher (factor variable, 36 levels)
-* `region:` Region the teacher's country is in, based on World Health Organization regions (factor variable, 8 levels)
-* `gender (TT2G01):` Teacher Gender (factor variable, 2 levels)
-* `age (TT2G02):` Teacher Age (numeric variable)
-* `years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
-* `age_ratio:` years_teacher divided by age, or in other words, fraction of life spent teaching (numeric variable)
-* `train_stat (TT2G11):` Training level of teacher (factor variable)
-* `prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt with respect to 3 different areas of teaching, which were content, pedagogy and classroom practice respectively (ordered factor variable, 4 levels)
-* `avg_prep:` The average of each teachers responses for prep_A/B/C (numeric variable between 1 and 4)
-* `total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
-* `feedback_salary (TT2G30G):` Whether performance feedback influences salary (ordered factor variable, 4 levels)
+*`country (CNTRY):` Country of teacher (factor variable, 36 levels)
+*`region:` Region the teacher's country is in, based on World Health Organization regions (factor variable, 8 levels)
+*`gender (TT2G01):` Teacher Gender (factor variable, 2 levels)
+*`age (TT2G02):` Teacher Age (numeric variable)
+*`years_teacher (TT2G05B):` Years of teaching experience (numeric variable)
+*`age_ratio:` years_teacher divided by age, or in other words, fraction of life spent teaching (numeric variable)
+*`train_stat (TT2G11):` Training level of teacher (factor variable)
+*`prep_A/B/C (TT2G13A/B/C):` How prepared the teacher felt with respect to 3 different areas of teaching, which were content, pedagogy and classroom practice respectively (ordered factor variable, 4 levels)
+*`avg_prep:` The average of each teachers responses for prep_A/B/C (numeric variable between 1 and 4)
+*`total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
+*`feedback_salary (TT2G30G):` Whether performance feedback influences salary (ordered factor variable, 4 levels)
 * `collab (TT2G44E):` How collaborative is the school culture? (ordered factor variable, 4 levels)
 * `num_students (TT2G38):` Number of students in the teacher’s class (numeric variable)
 * `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (ordered factor variable, 4 levels)
 * `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches (boolean numeric variable)
 * `num_subjects:` The number of subjects the teacher teaches (numeric variable)
 * `sat1-sat10 (TT2G46[A - J]):` Ten questions related to teacher job satisfaction (ordered factor variables, 4 levels)
-* `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable)
+* `sat_avg:` An average of the ten questions related to teacher job satisfaction (numeric variable).  This is our repsonse variable for research question 1.
 
 ##### Initial Plots Describing Data
 
@@ -452,7 +452,7 @@ When we first began analyzing factors by country, we grouped the countries into 
 
 However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania), and decided to analyze that subset of countries.
 
-```{r, echo=TRUE}
+```{r}
 country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
 td_country <-teacher_data[teacher_data$country %in% c("SVK", "JPN", "SRB", "ROU", "MYS", "MEX"),]
 # remove unused factors
@@ -461,7 +461,7 @@ td_country$country <- factor(td_country$country, levels=c("SVK", "JPN",  "SRB", 
 
 Based on the predictors affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively, in those factors.
 
-```{r, fig.height=4, fig.width=8, message=FALSE, warning=FALSE}
+```{r, fig.height=3, fig.width=8, message=FALSE, warning=FALSE}
 # collab plot
 p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaboratie school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
@@ -470,7 +470,7 @@ p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, 
 grid.arrange(p41,p42, ncol=2)
 ```
 
-Indeed, from an anova we can see that collab and avg_prep are themselves significant in variation by country.
+Indeed, from an anova we can see that collab and prep_A are themselves significant in variation by country.
 
 ```{r}
 # Check which variables have a significant correlation with region
