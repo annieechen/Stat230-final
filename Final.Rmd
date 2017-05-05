@@ -244,6 +244,7 @@ for(i in 1:ncol(teacher_data)) {
 ```
 
 Dataset for Linear Regression Model: To start, for our linear regression model, we are going to remove columns with a large number of NAs, the subject data columns (we're only interested in the number of subjects each teacher is teaching, not the specific subjects), and the 10 satisfaction related questions, as they were used to create our response variable.
+
 ```{r}
 x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 ```
@@ -251,18 +252,20 @@ x <- na.omit(teacher_data[, -c(sat_indices, na_cols, subject_indices)])
 One of the things we are interested in is how geography impacts teacher satisfaction, however we have two different geography variables.  We can't include both in the model, as they are linearly dependent, and R will only find a set of coefficients for one of the two variables if we put both in the model.  Because of this, let's try both and compare the results:
 
 Linear model using country (summary has been left out for space):
+
 ```{r, echo=TRUE}
 m_country <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
 summary(m_country)$r.squared
 ```
 
 Linear model using region (summary has been left out for space):
+
 ```{r, echo=TRUE}
 m_region <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("country"))])
 summary(m_region)$r.squared
 ```
 
-If one looks at the two summaries (Summaries 1 and 2 in the Appendix), one can see that a large amount of the country categories have coefficients with significant p-values in the first model, and all of the region categories have coefficients with significant p-values in the second model.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1983.  This means there was drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model. We can also see that train_stat was not significant in either of the models, so let's remove that from future models.
+If one looks at the two summaries (Summaries 1 and 2 in the Appendix), one can see that a large amount of the country categories have coefficients with significant p-values in the first model, and all of the region categories have coefficients with significant p-values in the second model. However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1983.  This means R-squared dropped by roughly 19%, which is quite a bit.  Thus, we use the country data in the linear model. We can also see that train_stat was not significant in either of the models, so let's remove that from future models.
 
 Lastly, it seems very possible that age and years_teacher are correlated, since teachers that have been teaching for longer are likely to be older.  As a result, we probably don't need both predictors in our linear model.  Let's check the correlation:
 
@@ -351,12 +354,13 @@ h2 <- x.new %>% ggplot(aes(x=years_teacher)) + geom_histogram() +
         plot.title=element_text(size=8))
 
 h3 <- x.new %>% ggplot(aes(x=collab)) + geom_bar() +
-  labs(title="Bar Graph of Collaboration Rating",
+  labs(title="Bar Graph of 
+       Collaboration Rating",
        x="How Collaborative is School Culture",
        y="Count") +
   theme(axis.text=element_text(size=6),
         axis.title=element_text(size=6),
-        plot.title=element_text(size=8))
+        plot.title=element_text(size=8))  + theme(axis.text.x=element_text(angle=-25, hjust= .1))
 
 h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() +
   labs(title="Histogram of The Number
@@ -370,7 +374,7 @@ h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() +
 grid.arrange(h1, h2, h3, h4, ncol = 4)
 ```
 
-Three of the plots above, although not perfectly normal, don't have a huge amount of skew.  In fact, the histogram for time spent on teaching related activities has very little skew.  As a result, we probably don't need to transform any of these variables.  The number of subjects histogram does have a lot of skew.  However, we tried several different transformations, and none of them seemed to help much.  After the creating the model, we will look at the normal Q-Q plot to make sure the normality assumption wasn't violated too significantly.
+Three of the plots above, although not perfectly normal, don't have a huge amount of skew. We don't need to transform any of these variables.  The number of subjects histogram does have a lot of skew.  However, we tried several different transformations, and none of them seemed to help much.  After the creating the model, we will look at the normal Q-Q plot to make sure the normality assumption wasn't violated too significantly.
 
 Now that we have a new data set with all of our variable selections, let's make a final model (summary removed from report for the sake of space):
 ```{r, echo=TRUE}
@@ -389,9 +393,10 @@ plot(m_final, which=2)
 We can see from the two plots above that there are no trends in the residuals, and the Normal Q-Q plot is close to a straight line, so our assumptions hold.
 
 **General Analysis of the Final Linear Model:**
+
 Looking at the model summary (Summary 3 in Appendix), our final linear model has an R-squared value of 0.24.  Many of the countries have coefficients with significant p-values, and all of the other predictors have coefficients with significant p-values at a level of 0.001.  However, this is not that surprising given how large our dataset is.  We might be able to get more insight by analyzing the values of the coefficients.
 
-In order to decide which predictors seem to be particularly helpful in predicting teacher satisfaction, we will look at the magnitude of the coefficients in the model summary and the confidence intervals of the coefficients (Summary 4 in Appendix) and see how far away they are from zero.
+To decide which predictors seem to be particularly helpful in predicting teacher satisfaction, we look at the magnitude of the coefficients in the model summary and the confidence intervals of the coefficients (Summary 4 in Appendix) and see how far away they are from zero.
 
 ```{r, include=FALSE}
 confint(m_final)
@@ -399,19 +404,19 @@ confint(m_final)
 
 The largest coefficients in the model in terms of magnitude were: collab.L, countryMEX, countryFIN, countryBFL, countryMYS, and countryNLD.  All the other coefficients had magnitudes that were less than 0.2.
 
-Looking at the confidence intervals of all of the predictors other than country, we can see that the confidence interval for the coefficient of num_subjects is pretty close to zero (it has a range of 0.0017 to 0.0054).  The confidence interval for the coefficient gender is also pretty close to zero, with a range of -0.027 to -0.016.  Lastly, two of the confidence intervals closest to zero are for the coefficient of years_teacher (0.00045, 0.00095) and the coefficient for total_time (-0.00063,-0.00031).  Given the small magnitudes of the coefficients, and how close the confidence intervals of these four predictors are to zero, they do not seem that significant in predicting teacher satisfaction.
+The confidence interval for the coefficient of num_subjects is close to zero (it has a range of 0.0017 to 0.0054). The confidence interval for the coefficient gender is also pretty close to zero, with a range of -0.027 to -0.016.  Lastly, two of the confidence intervals closest to zero are for the coefficient of years_teacher (0.00045, 0.00095) and the coefficient for total_time (-0.00063,-0.00031).  Given the small magnitudes of the coefficients, and how close the confidence intervals of these four predictors are to zero, they do not seem that significant in predicting teacher satisfaction.
 
-On the other hand, the coefficients for collab.L and avg_prep had confidence intervals of roughly (0.55, 0.57) and (0.11, 0.12) respectively.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient for one of the categories of the collab variable with a magnitude of around 0.5 seems pretty significant.  A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.
+On the other hand, the coefficients for collab.L and avg_prep had confidence intervals of roughly (0.55, 0.57) and (0.11, 0.12) respectively.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient for one of the categories of the collab variable with a magnitude of around 0.5 seems pretty significant. A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.
 
-Lastly, we can see that several of the countries have coefficients with pretty large magnitudes, and confidence intervals for those coefficients that are pretty far from zero.  For example, the confidence interval for the coefficient for countryMEX is (0.4494836350, 0.4990107641) and for countryFIN is (0.2306808115, 0.2792257572). In fact, 15 countries have coefficients with a magnitude of at least 0.1, and a confidence interval for that coefficient that is also at least 0.1 away from 0.  This suggests that country is also significant in predicting teacher satisfaction.
+Moreover, we can see that several of the countries have coefficients with pretty large magnitudes, and confidence intervals for those coefficients that are pretty far from zero.  For example, the confidence interval for the coefficient for countryMEX is (0.4494836350, 0.4990107641) and for countryFIN is (0.2306808115, 0.2792257572). In fact, 15 countries have coefficients with a magnitude of at least 0.1, and a confidence interval for that coefficient that is also at least 0.1 away from 0.  This suggests that country is also significant in predicting teacher satisfaction.
 
-Lastly, let's look at the sign of the coefficients in the model, to see the direction of the relationships between the predictors and sat_avg.  What is positively correlated with sat_avg? What is negatively correlated with sat_avg?  Do these directions make sense?:
+Lastly, let's look at the sign of the coefficients in the model, to see the direction of the relationships between the predictors and sat_avg.
 
 Of course we should keep in mind the fact that there are so many factors in this model and thus the coefficients may not completely explain the relationship of the variables.
 
-years_teacher has a very small positive coefficient (0.0006979) with sat_avg. A positive correlation may make sense, as those who are satisfied with being a teacher are more likely to stay for longer. However, this coefficient is very small. total_time has a very small negative coefficient (-0.0004706). The size of this may be because of the duality between those who are overworked being unsatisfied, while also addressing that those who are satisfied with their jobs may be more inclined to work more. From this coefficient alone it seems that the first phenomenon may be more prominant. The collab coefficients actually get larger and larger with higher levels of belief that the work environment is collaborative. This makes a lot of sense, as a more collaborative work environment is generally thought of as a positive aspect and thus may be positively correlated with satisfaction. It seems that there is also a positive coefficient for the number of subjects taught and a negative coefficient for gender being male, which do not have any obvious intuition either for or against, but are interesting to see. One potential explanation for number of subjects taught could be that a satisfied teacher is willing to put in more work and teach more than one subject.  Finally, there is a positive coefficient for the average amount of preparation, which may make sense as those who are satisfied may be more inclined to prepare more and those who feel prepared may be more satisfied.
+years_teacher has a very small positive coefficient (0.0006979) with sat_avg. A positive correlation may make sense, as those who are satisfied with being a teacher are more likely to stay for longer. However, this coefficient is very small. total_time has a very small negative coefficient (-0.0004706). This may be because of the duality between those who are overworked being unsatisfied, while also addressing that those who are satisfied with their jobs may be more inclined to work more. From this coefficient alone it seems that the first phenomenon may be more prominant. The collab coefficients actually get larger and larger with higher levels of belief that the work environment is collaborative. This makes a lot of sense, as a more collaborative work environment is generally thought of as a positive aspect and thus may be positively correlated with satisfaction. It seems that there is also a positive coefficient for the number of subjects taught and a negative coefficient for gender being male, which do not have any obvious intuition either for or against, but are interesting. One potential explanation for number of subjects taught could be that a satisfied teacher is willing to put in more work and teach more than one subject.  Finally, there is a positive coefficient for the average amount of preparation, which may make sense as those who are satisfied may be more inclined to prepare more and those who feel prepared may be more satisfied.
 
-**Conclusion:** The results of this linear model suggest that teachers perceptions of how collaborative the school culture is, as well as how prepared the teachers feel, are significant predictors for how satisfied teachers are.  Interestingly, although how prepared teachers felt was significant in predicting teacher satisfaction, the degree of teacher training was not.  It is possible that this is because it was a Yes or No question on the survey, and therefore we didn't have more information on the quantity or quality of training that teachers received, whereas teachers were able to rate how prepared they felt in several areas on a scale of "Not at all", "Somewhat", "Well", and "Very well".  Lastly, country was very useful in predicting teacher satisfaction.  This could be due to a variety of reasons, including cultural values and attitudes at work, school legislation and restrictions, funding of schools, the ratio of public to private schools, and the respect that the teaching profession receives, all of which vary between countries, and are environmental factors at the country level, rather than the kind of information available in a teacher survey.
+**Conclusion:** This linear model suggests that teachers' perceptions of how collaborative the school culture is, as well as how prepared the teachers feel, are significant predictors for how satisfied teachers are.  Interestingly, although how prepared teachers felt was significant in predicting teacher satisfaction, the degree of teacher training was not.  It is possible that this is because it was a Yes or No question on the survey, and therefore we didn't have more information on the quantity or quality of training that teachers received, whereas teachers were able to rate how prepared they felt in several areas on a scale of "Not at all", "Somewhat", "Well", and "Very well".  Lastly, country was very useful in predicting teacher satisfaction.  This could be due to a variety of reasons, including cultural values and attitudes at work, school legislation and restrictions, funding of schools, the ratio of public to private schools, and the respect that the teaching profession receives, all of which vary between countries, and are environmental factors at the country level, rather than the kind of information available in a teacher survey.
 
 ### Analysis for Research Question 2
 
@@ -493,7 +498,9 @@ The takeaway is that although there are predictors that correlate positively wit
 
 Overall, our models didn't completely explain the variation in the data. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so we were pleased with the observations we did find.
 
-TODO: __insert findings here lol__
+The first thing we were worried about in this project was how satisfaction was related to the different factors, and as mentioned previously it seems that the most significant factors by linear model coefficient were collab.L and avg_prep. Moreover, we noted that many of the country coefficients were very large, implying a large amount of variation between the satisfaction averages across countries.
+
+This brings us to our second research question, which addressed how various factors changed across countries. We first confirmed the above finding with a graph of satisfaction for each country, and supported this with an anova. Then, we also noted that some of the factors that were important to satisfaction, in particular level of collaboration and amount of preparation were themselves also significantly different across countries. And in fact, in addition to noting that these factors themselves varied across countries, we showed that the relationship of these factors (in particular the relationship of preparation level to satisfaction) also varied by country.
 
 Before we started looking into the data, we expected there to be a lot more unsatisfied teachers than there actually were. Indeed, if we take `sat_avg` scores of above 2.5 to mean that the respondent is generally satisfied (if on average, they responded Agree or Strongly Agree more than Disagree or Strongly Disgree on the teacher satisfaction questions), then
 
