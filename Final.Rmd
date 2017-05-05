@@ -209,7 +209,10 @@ Although our earlier plot of satisfaction against the degree of collaboration at
 ```{r, fig.height=2, message=FALSE, warning=FALSE}
 plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + 
   geom_boxplot() +
-  labs(title="Teacher Training Status vs Teacher Satisfaction", y="Teacher Satisfaction (low to high)") +
+  labs(title="Teacher Training Status
+       vs Teacher Satisfaction",
+       x="Teacher Training Status",
+       y="Teacher Satisfaction (low to high)") +
   theme(axis.text=element_text(size=6),
         axis.title=element_text(size=6),
         plot.title=element_text(size=8))
