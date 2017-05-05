@@ -442,25 +442,19 @@ mapParams1 <- mapCountryData(sPDF1, nameColumnToPlot = "mean_satisfaction", colo
 do.call( addMapLegend, c(mapParams1, legendWidth=0.5, legendShrink=0.5))
 ```
 
-When we first began analyzing factors by country, we grouped the countries into 8 regions using the World Health Organization geographical categories, like below. 
+When we first began analyzing factors by country, we grouped the countries into 8 regions using the World Health Organization geographical categories and that the difference in mean satisfaction was still statistically significant (p-value < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown in the pairwise.t.test in the appendix.
 
-```{r, fig.height=3, fig.width=6, message=FALSE, warning=FALSE}
-par(mar=c(0.1, 0.1, 0.1, 0.1))
-country_region_pairs <- unique(teacher_data[c("country", "region")])
-#code for map with average teacher satisfaction by country
-sPDF2 <- joinCountryData2Map(country_region_pairs, joinCode = "ISO3", nameJoinColumn = "country")
-mapParams2  <-mapCountryData(sPDF2, 
-               nameColumnToPlot = "region",
-               colourPalette=c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3" ,"#A6D854" ,"#FFD92F","#B3B3B3"),
-                oceanCol = "lightblue", missingCountryCol="white",
-               addLegend = FALSE,
-               mapTitle = "WHO Regions"
-               )
-potato <- do.call(addMapLegendBoxes, c(mapParams2, x='bottomleft',title="Region", cex=.5))
+Below is also an anova test showing the significance of the difference in satisfaction by region.
+
+```{r, echo=TRUE}
+# Regression of sat_avg vs region
+msatreg <- lm(sat_avg ~ region, data=teacher_data)
+
+# ANOVA of regression
+anova(msatreg)
 ```
-We did find that the difference in mean satisfaction was still statistically significant (p-value < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown in the pairwise.t.test in the appendix.
 
-We did all the analysis below first by region. However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania), and decided to analyze that subset of countries.
+However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania), and decided to analyze that subset of countries.
 
 ```{r, echo=TRUE}
 country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
@@ -477,11 +471,15 @@ p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, 
 
 p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, country), fill=factor(prep_A)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the content of the subjects you teach?') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
-p43 <- td_country %>% filter(!is.na(prep_B)) %>% ggplot(aes(x = product(prep_B, country), fill=factor(prep_B)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the pedagogy of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
-
-p44 <- td_country %>% filter(!is.na(prep_C)) %>% ggplot(aes(x = product(prep_C, country), fill=factor(prep_C)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the classroom practice of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
-
 grid.arrange(p41,p42, ncol=2)
+```
+
+Indeed, from an anova we can see that collab and avg_prep are themselves significant in variation by region.
+
+```{r}
+# Check which variables have a significant correlation with region
+anova(lm(as.numeric(collab) ~ region, data=teacher_data))
+anova(lm(as.numeric(avg_prep) ~ region, data=teacher_data))
 ```
 
 Looking at the first plot, there isn't really any trend, but Mexico jumps out as an outlier. It's the country with the highest teacher satisfaction, but almost 30% of teachers say their school isn't collaborative. Does this mean that collaboration doesn't matter as much to satisfaction in Mexico? We c
@@ -505,34 +503,7 @@ ggplot(aes(x=prep_A, y=sat_avg, col=country)) + geom_boxplot(varwidth = TRUE)
 
 Here, we see something unexpected: The teachers in Mexico who are most satisfied are those who don't feel prepared at all to teach their subject.
 
-The takeaway is that although there are predictors that correlate positively with higher teacher satisfaction, like collaborative schools, and countries that have significantly higher teacher satisfaction than others, like Mexico, the countries with more satisfied teachers don't necessarily have the most collaborative schools. Teacher satisfaction is complex, and we have xploed a very small part of the picture
-
-##### From here below, I don't know whether we need to include
-
-
-Given that there appear to be differences by region from the plots above, let's see if these differences are statistically significant using an anova test.  
-
-```{r}
-# Check which variables have a significant correlation with region
-anova(lm(as.numeric(collab) ~ region, data=teacher_data))
-anova(lm(as.numeric(avg_prep) ~ region, data=teacher_data))
-```
-
-It looks like all of the variables vary across regions.
-
-#### One-way ANOVA Test
-
-After the analysis above is completed, we'll run an ANOVA test to see if there are statistically significant variances in mean `sat_avg` across regions.
-
-```{r, echo=TRUE}
-# Regression of sat_avg vs region
-msatreg <- lm(sat_avg ~ region, data=teacher_data)
-
-# ANOVA of regression
-anova(msatreg)
-
-## insert pairwise t-test with adjustment
-```
+The takeaway is that although there are predictors that correlate positively with higher teacher satisfaction, like collaborative schools, and countries that have significantly higher teacher satisfaction than others, like Mexico, the countries with more satisfied teachers don't necessarily have the most collaborative schools. Teacher satisfaction is complex, and we have xploed a very small part of the picture.
 
 # Conclusion:
 
