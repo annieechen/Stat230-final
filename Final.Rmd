@@ -93,7 +93,7 @@ teacher_data$region <- as.factor(teacher_data$region)
 ```
 
 ### Introduction
-  This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset, coordinated by the Organization for Economic Cooperation and Development (OECD), an intergovernmental organization of industrialized countries. The TALIS dataset comes from a survey of the teaching workforce that aims to collect information about teaching as a profession, the working conditions of teachers, and the learning environments of schools. It also aimed to provide a more global view of education systems, and metrics that could be used to compare education systems from different countries. TALIS was administered in 2008 and 2013. We are using the dataset from 2013, which contains answers from teachers from more than 10,000 schools in 36 different industrialized countries. Not all of the countries were English speaking. The TALIS dataset contains several different files, which are split by school type. Although the dataset contains information from a variety of school types (primary, secondary, etc), most of the data was on lower-secondary schools, so we focused on that file. At each school that was selected to participate, the principal and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires. We only analyzed teacher responses.
+  This analysis will focus on the Teaching and Learning International Survey (TALIS) Dataset, coordinated by the Organization for Economic Cooperation and Development (OECD), an intergovernmental organization of industrialized countries. The TALIS dataset comes from a survey of the teaching workforce that aims to collect information about teaching as a profession, the working conditions of teachers, and the learning environments of schools. It also aimed to provide a more global view of education systems, and metrics that could be used to compare education systems from different countries. TALIS was administered in 2008 and 2013. We are using the dataset from 2013, which contains answers from teachers from more than 10,000 schools in 36 different industrialized countries. Not all of the countries were English speaking. The TALIS dataset contains several different files, which are split by school type. Although the dataset contains information from a variety of school types (primary, secondary, etc), most of the data was on lower-secondary schools, so we only used that file. At each school that was selected to participate, the principal and a random selection of up to 22 teachers were chosen to complete voluntary online questionnaires. We only analyzed teacher responses.
   
   (1) Our 1st question is: Which variables and classroom factors are the best predictors of teacher job satisfaction?
   
@@ -101,7 +101,7 @@ teacher_data$region <- as.factor(teacher_data$region)
   
   (2) Our 2nd question is: How do teacher satisfaction, and some of the significant predictors found from question 1, vary by country?
 
-Because the TALIS dataset allows cross country comparison, we wanted to look at how some of the variables in the dataset varied by country. Looking at how teacher satisfaction varies by region could be particularly helpful to educators and policy makers. There are a lot of environmental factors that can affect teacher satisfaction, and they might not all be addressed in the TALIS questionnaire.  However, if we can identify which countries have particularly satisfied teachers, then perhaps people who are looking to increase teacher satisfaction can further research how schools work in those countries, past the information covered in the questionnaire. Additionally, if we are able to identify any variables that are particularly helpful in predicting teacher satisfaction (from research question 1), we want to see if the countries that have a higher average teacher satisfaction, also have values for those significant variables. Or in other words, after identifying qualities that seem to correlate with high teacher satisfaction, do the more satisfied countries seem to have those qualitites? Or does it seem like other factors, that are possibly not in the data set, are contributing to the higher levels of teacher satisfaction in those countries?
+Because the TALIS dataset allows cross country comparison, we wanted to look at how some of the variables in the dataset varied by country. Looking at how teacher satisfaction varies by region could be particularly helpful to educators and policy makers. There are a lot of environmental factors that can affect teacher satisfaction, and they might not all be addressed in the TALIS questionnaire.  However, if we can identify which countries have particularly satisfied teachers, then perhaps people who are looking to increase teacher satisfaction can further research how schools work in those countries, past the information covered in the questionnaire. Additionally, if we are able to identify any variables that are particularly helpful in predicting teacher satisfaction (from research question 1), we want to see if the countries that have a higher average teacher satisfaction, also have good values for those significant variables. Or in other words, after identifying qualities that seem to correlate with high teacher satisfaction, do the more satisfied countries seem to have those qualitites? Or does it seem like other factors, that are possibly not in the data set, are contributing to the higher levels of teacher satisfaction in those countries?
 
 ### Data
 
@@ -120,7 +120,7 @@ After picking a subset of those columns and creating some of our own, we were le
 * `avg_prep:` The average of each teachers responses for prep_A/B/C (numeric variable between 1 and 4)
 * `total_time (TT2G16):` Total time spent on teaching related activities in hours per week (numeric variable)
 * `feedback_salary (TT2G30G):` Whether performance feedback influences salary (ordered factor variable, 4 levels)
-* `collab (TT2G44E):` How collaborative is the school culture? (ordered factor variable, 4 levels)
+* `collab (TT2G44E):` How collaborative is the school culture? (factor variable, 4 levels)
 * `num_students (TT2G38):` Number of students in the teacher’s class (numeric variable)
 * `satisfaction (TJOBSATS):` Self rated teacher job satisfaction (ordered factor variable, 4 levels)
 * `Various Subject Names (TT2G15[A - L]):` 12 columns representing which subjects the teacher teaches (boolean numeric variable)
@@ -158,13 +158,13 @@ p3
 
 **Plot 1** As we are later analyzing the effect of different variables on teacher satisfaction, and the variation between different regions, it is important to note the overall distribution of our response variable. 
 
-**Plot 2** provides a box plot of collab vs sat_avg. This plot helps  answerour first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. We can see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question.
+**Plot 2** provides a box plot of collab vs sat_avg. This plot helps  answer our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. We can see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question.
 
 **Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our 2nd question, which looks at variations in sat_avg and other variables across geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). 
 
 ##### Removal of Unusual Values
 
-We previously cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  Let's look at 2 plots that illustrate this
+In a previous submission, we cleaned the dataset with respect to missing values and obvious errors.  However, when considering the context of some of our variables, some of the entries are still unusual.  Let's look at 2 plots that illustrate this
 
 ```{r, fig.height=2.5, message=FALSE, warning=FALSE}
 plot1 <- teacher_data %>% ggplot(aes(x=total_time)) + geom_histogram() +
@@ -203,18 +203,27 @@ teacher_data[age_start < 15 & !is.na(age_start), "years_teacher"] <- NA
 
 ### Analysis for Research Question 1 - Linear Regression
 
-To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to create a linear model. Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look several more plots of the data against our response variable, before diving into any linear regression models:
+To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to create a linear model. Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look at several more plots of the data against our response variable, before diving into any linear regression models:
 
 ```{r, fig.height=2, fig.width=9, message=FALSE, warning=FALSE}
 plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + geom_boxplot() +
   labs(title="Teacher Training Status vs Teacher Satisfaction",
        x = "Training Status",
-       y="Teacher Satisfaction (low to high)")
+       y="Teacher Satisfaction (low to high)") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8),
+        plot.title=element_text(size=8))
 plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05) +
   labs(title="Years Spent as a Teacher
        vs Teacher Satisfaction",
-       x="Years Spent as a Teacher", y="")
-plot3 <- teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=prep_A, y=sat_avg)) + geom_boxplot() + labs(title="Preparation vs Satisfaction", x="Prepared for the Content I Teach", y="")
+       x="Years Spent as a Teacher", y="Teacher Satisfaction (low to high)") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8),
+        plot.title=element_text(size=8))
+plot3 <- teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=prep_A, y=sat_avg)) + geom_boxplot() + labs(title="Preparation vs Satisfaction", x="Prepared for the Content I Teach", y="Teacher Satisfaction (low to high)") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8),
+        plot.title=element_text(size=8))
 
 grid.arrange(plot1, plot2, plot3, ncol=3)
 ```
@@ -267,7 +276,7 @@ summary(m_region)$r.squared
 
 If one looks at the two summaries (Summaries 1 and 2 in the Appendix), one can see that a large amount of the country categories have coefficients with significant p-values in the first model, and all of the region categories have coefficients with significant p-values in the second model. However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1983.  This means R-squared dropped by roughly 19%, which is quite a bit.  Thus, we use the country data in the linear model. We can also see that train_stat was not significant in either of the models, so let's remove that from future models.
 
-Lastly, it seems very possible that age and years_teacher are correlated, since teachers that have been teaching for longer are likely to be older.  As a result, we probably don't need both predictors in our linear model.  Let's check the correlation:
+Lastly, it seems very possible that age and years_teacher are correlated, since teachers that have been teaching for longer are likely to be older.  As a result, we probably shouldn't use both predictors in our linear model.  Let's check the correlation:
 
 ```{r}
 cor(teacher_data$age, teacher_data$years_teacher, use = "complete.obs")
@@ -321,11 +330,11 @@ cor(data, use = "complete.obs")
 
 We can see from the correlation matrix above that all three prep questions are pretty correlated, and therefore we shouldn't put all three in our linear model.  Let's try creating a single predictor that's the average of all three, in order to indicate teachers' overall sense of preparedness.
 
-```{r}
+```{r, echo=TRUE}
 teacher_data$avg_prep <- apply(data, 1, mean)
 ```
 
-Now let's make a new dataset with all of the variable selections we just made. So we need to remove region, train_stat, age, age_start, age_ratio, and all three prep predictors.
+Now let's make a new dataset with all of the variable selections we just made. So we need to remove region, train_stat, age, age_ratio, and all three prep predictors.
 
 ```{r, echo=TRUE}
 x.new <- teacher_data[, -c(sat_indices, na_cols, subject_indices, prep_indices)]
@@ -376,7 +385,7 @@ grid.arrange(h1, h2, h3, h4, ncol = 4)
 
 Three of the plots above, although not perfectly normal, don't have a huge amount of skew. We don't need to transform any of these variables.  The number of subjects histogram does have a lot of skew.  However, we tried several different transformations, and none of them seemed to help much.  After the creating the model, we will look at the normal Q-Q plot to make sure the normality assumption wasn't violated too significantly.
 
-Now that we have a new data set with all of our variable selections, let's make a final model (summary removed from report for the sake of space):
+Now that we have a new data set with all of our variable selections, let's make a final model (summary in Appendix):
 ```{r, echo=TRUE}
 m_final <- lm(sat_avg ~ ., data=x.new)
 summary(m_final)$r.squared
@@ -394,9 +403,11 @@ We can see from the two plots above that there are no trends in the residuals, a
 
 **General Analysis of the Final Linear Model:**
 
+Our final model used the dataset x.new, which had 102186 observations, and 8 columns (7 predictors and the response variable).  That means that x.new had roughly 87% of our original observations.
+
 Looking at the model summary (Summary 3 in Appendix), our final linear model has an R-squared value of 0.24.  Many of the countries have coefficients with significant p-values, and all of the other predictors have coefficients with significant p-values at a level of 0.001.  However, this is not that surprising given how large our dataset is.  We might be able to get more insight by analyzing the values of the coefficients.
 
-To decide which predictors seem to be particularly helpful in predicting teacher satisfaction, we look at the magnitude of the coefficients in the model summary and the confidence intervals of the coefficients (Summary 4 in Appendix) and see how far away they are from zero.
+To decide which predictors seem to be particularly helpful in predicting teacher satisfaction, we look at the magnitude of the coefficients in the model summary (summary 3 in Appendix) and the confidence intervals of the coefficients (Summary 4 in Appendix) and see how far away they are from zero.
 
 ```{r, include=FALSE}
 confint(m_final)
@@ -404,9 +415,9 @@ confint(m_final)
 
 The largest coefficients in the model in terms of magnitude were: collab.Sronglyagree, countryMEX, collabAgree, countryFIN, countryBFL, collabDisagree, countryMYS, and countryNLD.  All the other coefficients had magnitudes that were less than 0.2.
 
-The confidence interval for the coefficient of num_subjects is close to zero (it has a range of 0.0017 to 0.0054). The confidence interval for the coefficient gender is also pretty close to zero, with a range of -0.027 to -0.016.  Lastly, two of the confidence intervals closest to zero are for the coefficient of years_teacher (0.00045, 0.00095) and the coefficient for total_time (-0.00063,-0.00031).  Given the small magnitudes of the coefficients, and how close the confidence intervals of these four predictors are to zero, they do not seem that significant in predicting teacher satisfaction.
+The confidence interval for the coefficient of num_subjects is close to zero (it has a range of 0.0017 to 0.0054). The confidence interval for the coefficient gender is also pretty close to zero, with a range of -0.027 to -0.016.  Lastly, two of the confidence intervals closest to zero are for the coefficient of years_teacher (0.00045, 0.00095) and the coefficient for total_time (-0.00063,-0.00031).  Given the small magnitudes of the coefficients compared to the scale of teacher satisfaction, and how close the confidence intervals of these four predictors are to zero, they do not seem that important to predicting teacher satisfaction.
 
-On the other hand, the coefficients for collab.Stronglyagree, collab.Agree, collab.Disagree and avg_prep had confidence intervals of roughly (0.743, 0.771), (0.460, 0.487), (0.221, 0.250) and (0.11, 0.12) respectively, all of which are intervals that are a decent amount away from 0.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient for one of the categories of the collab variable with a magnitude of around 0.7 or 0.5 seems pretty influential. A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.  Consequently, it looks like both collab and avg_prep were useful predictors for predicting teacher satisfaction.
+On the other hand, the coefficients for collab.Stronglyagree, collab.Agree, collab.Disagree and avg_prep had confidence intervals of roughly (0.743, 0.771), (0.460, 0.487), (0.221, 0.250) and (0.11, 0.12) respectively, all of which are intervals that are a decent amount away from 0.  Given that teacher satisfaction was on a scale of 1 to 4, a coefficient for one of the categories of the collab variable with a magnitude of around 0.7 or 0.5 seems pretty influential, since an intercept shift of 0.7 is almost an entire point in teacher satisfaction. A coefficient of a little over 0.1 also seems significant relative to how small many of the other coefficients were.  Consequently, it looks like both collab and avg_prep were useful predictors for predicting teacher satisfaction.
 
 Moreover, we can see that several of the countries have coefficients with pretty large magnitudes, and confidence intervals for those coefficients that are pretty far from zero.  For example, the confidence interval for the coefficient for countryMEX is (0.4494836350, 0.4990107641) and for countryFIN is (0.2306808115, 0.2792257572). In fact, 15 countries have coefficients with a magnitude of at least 0.1, and confidence intervals for those coefficients that are also at least 0.1 away from 0.  This suggests that country is also significant in predicting teacher satisfaction.
 
@@ -437,7 +448,7 @@ mapParams1 <- mapCountryData(sPDF1, nameColumnToPlot = "mean_satisfaction", colo
 do.call( addMapLegend, c(mapParams1, legendWidth=0.5, legendShrink=0.5))
 ```
 
-Below is also an anova test showing the significance of the difference in satisfaction by region.
+Below is also an anova test showing that there is a significant difference between the mean satisfaction of at least two of the countries. 
 
 ```{r}
 # Regression of sat_avg vs region
@@ -492,9 +503,9 @@ The takeaway is that although there are predictors that correlate positively wit
 
 # Conclusion:
 
-Overall, our models didn't completely explain the variation in the data. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so we were pleased with the observations we did find.
+Overall, our models didn't completely explain the variation in the data. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so we were pleased with the observations we did find.  
 
-The first thing we were worried about in this project was how satisfaction was related to the different factors, and as mentioned previously it seems that the most significant factors by linear model coefficient were collab, avg_prep, and country. In fact, we noted that many of the country coefficients were very large, implying that satisfaction varies quite a bit by country.
+The first question we were interested in for this project was how satisfaction was related to the different factors, and as mentioned previously it seems that the most significant factors by linear model coefficient were collab, avg_prep, and country. In fact, we noted that many of the country coefficients were very large, implying that satisfaction varies quite a bit by country.
 
 This brings us to our second research question, which addressed how various factors changed across countries. We first confirmed the above finding with a graph of satisfaction for each country, and supported this with an anova. Then, we also noted that some of the factors that were important to satisfaction, in particular level of collaboration and amount of preparation were themselves also significantly different across countries. 
 
@@ -504,7 +515,7 @@ Before we started looking into the data, we expected there to be a lot more unsa
 nrow(teacher_data[teacher_data$sat_avg >=2.5,])/nrow(teacher_data)
 ```
 
-of our respondents were satisfied. Of course, this is a very low baseline (it just means the teacher didn't respond "Agree" or "Strongly Agree" to a question like "I regret that I decided to become a teacher.") If we were to collect data specifically to understand how various factors affect teacher satisfication, we would want to get a more precise sense of how satisfied or unsatisfied teachers are about specific aspects of teaching. We might ask respondents to our survey to rate, on a scale from 1 - 10, their satisfaction with things like working conditions, pay, sense of impact, and more. 
+roughly 88% of our respondents were satisfied. Of course, this is a very low baseline (it just means the teacher didn't respond "Agree" or "Strongly Agree" to a question like "I regret that I decided to become a teacher.") If we were to collect data specifically to understand how various factors affect teacher satisfication, we would want to get a more precise sense of how satisfied or unsatisfied teachers are about specific aspects of teaching. We might ask respondents to our survey to rate, on a scale from 1 - 10, their satisfaction with things like working conditions, pay, sense of impact, and more. 
 
 As another problem, we don’t know how many teachers were sampled comparatively by country - we know it was no more than 22 per school, but were unable to analyze how representative our sample was of a country as a whole. In addition, there were some country codes that were just cities (e.g. all our china teachers came from Shanghai).
 
