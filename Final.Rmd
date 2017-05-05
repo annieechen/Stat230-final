@@ -158,7 +158,7 @@ p3
 
 **Plot 1** As we are later analyzing the effect of different variables on teacher satisfaction, and the variation between different regions, it is important to note the overall distribution of our response variable. 
 
-**Plot 2** provides a box plot of collab vs sat_avg. This plot helps  answerour first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. We can see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question.
+**Plot 2** provides a box plot of collab vs sat_avg. This plot helps answer our first research question, in which we assess which variables are particularly predictive of overall teacher satisfaction. We can see a strong visual trend between how collaborative a teacher viewed his/her school environment to be, and how satisfied that teacher was. We will provide similar plots for other variables in the analysis of our first research question.
 
 **Plot 3** provides a box plot of geographic region vs sat_avg. This is relevant to our 2nd question, which looks at variations in sat_avg and other variables across geographical regions. Visually, while all median values for sat_avg hover around the range of 2.5 to 3.5, there is still a noticeable difference in some of the distributions (e.g. the median and both quartiles of the satisfaction value for North America is noticeably above that of Eastern Europe). 
 
@@ -219,7 +219,7 @@ plot3 <- teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=prep_A, y=sat_
 grid.arrange(plot1, plot2, plot3, ncol=3)
 ```
 
-From these plots we can see that teacher's training status doesn't seem to have a huge relationship with teacher satisfaction, however the median of people who did receive some type of training is slightly higher than those who didn't have any training.  There also appears to be some linear reglationship between years spent teaching and teacher satisfaction in the center graph.  And in the graph on the right, there does seem to be differences in teacher satisfaction between different levels of preparedness.  Consequently, it does seem to be worth exploring a linear model, where we try to use all of our predictors to predict teacher satisfaction.
+From these plots we can see that teacher's training status doesn't seem to have a huge relationship with teacher satisfaction, however the median of people who did receive some type of training is slightly higher than those who didn't have any training.  There also appears to be some linear relationship between years spent teaching and teacher satisfaction in the center graph.  And in the graph on the right, there does seem to be differences in teacher satisfaction between different levels of preparedness.  Consequently, it does seem to be worth exploring a linear model, where we try to use all of our predictors to predict teacher satisfaction.
 
 ```{r}
 # In order to have easier control over which predictors to use in our model, below we create several lists of indices that we might want to include or exclude as a group
@@ -334,7 +334,7 @@ x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age
 
 Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:We can see from the histogram of sat_avg (Plot 1, displayed in the Dataset section), that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. 
 
-```{r, fig.height=2, fig.width=9, message=FALSE, warning=FALSE}
+```{r, fig.height=2, fig.width=9.5, message=FALSE, warning=FALSE}
 h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() +
   labs(title="Histogram of Time Spent on
        Teaching Activities",
@@ -360,7 +360,7 @@ h3 <- x.new %>% ggplot(aes(x=collab)) + geom_bar() +
        y="Count") +
   theme(axis.text=element_text(size=6),
         axis.title=element_text(size=6),
-        plot.title=element_text(size=8))  + theme(axis.text.x=element_text(angle=-25, hjust= .1))
+        plot.title=element_text(size=8))  + theme(axis.text.x=element_text(angle=-35, hjust= .1))
 
 h4 <- x.new %>% ggplot(aes(x=num_subjects)) + geom_bar() +
   labs(title="Histogram of The Number
@@ -461,7 +461,7 @@ Based on the predictors affected job satisfaction in Part 1, we can see which co
 
 ```{r, fig.height=2.5, fig.width=8, message=FALSE, warning=FALSE}
 # collab plot
-p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaboratie school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
+p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaborative school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
 p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, country), fill=factor(prep_A)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the content of the subjects you teach?') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
@@ -481,7 +481,7 @@ Looking at the first plot, there isn't really any trend, but Mexico jumps out as
 ```{r, fig.height=2}
 td_country %>%
     filter(country == "MEX") %>% filter(!is.na(collab)) %>%
-    ggplot(aes(x=collab, y=sat_avg, col=country)) + geom_boxplot(varwidth=TRUE) + labs(title="School Collaboration vs Satisfaction in Mexico")
+    ggplot(aes(x=collab, y=sat_avg)) + geom_boxplot(varwidth=TRUE) + labs(title="School Collaboration vs Satisfaction in Mexico")
 ```
 
 Teacher satisfaction is still correlated positively with teacher satisfaction in Mexico, so there must be some other factor that makes the average satisfaction in Mexico higher, other than having a higher level of collaboration.
