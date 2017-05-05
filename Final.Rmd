@@ -423,7 +423,7 @@ years_teacher has a very small positive coefficient (0.0006979) with sat_avg. A 
 
 ### Analysis for Research Question 2
 
-Given how useful country was in predicting teacher_satisfaction, it would be interesting to see whether there are any significant regional differences in some of the other significant predictors from our linear model above.  For example, in the regions with higher teacher satisfaction, are collaboration ratings also higher? Therefore, let's now address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors. First, lets look at a map of average teacher satisfaction by country.
+Given how useful country was in predicting teacher_satisfaction, it would be interesting to see whether there are any significant regional differences in some of the other significant predictors from our linear model above. For example, in the regions with higher teacher satisfaction, are collaboration ratings also higher? Therefore, let's now address our second research question, and try to identify the differences across different regions for teacher job satisfaction and other classroom factors. First, lets look at a map of average teacher satisfaction by country.
 
 ```{r, warning=FALSE, include=FALSE}
 # set to ISO codes
@@ -503,31 +503,27 @@ ggplot(aes(x=prep_A, y=sat_avg, col=country)) + geom_boxplot(varwidth = TRUE)
 
 Here, we see something unexpected: The teachers in Mexico who are most satisfied are those who don't feel prepared at all to teach their subject.
 
-The takeaway is that although there are predictors that correlate positively with higher teacher satisfaction, like collaborative schools, and countries that have significantly higher teacher satisfaction than others, like Mexico, the countries with more satisfied teachers don't necessarily have the most collaborative schools. Teacher satisfaction is complex, and we have xploed a very small part of the picture.
+The takeaway is that although there are predictors that correlate positively with higher teacher satisfaction, like collaborative schools, and countries that have significantly higher teacher satisfaction than others, like Mexico, the countries with more satisfied teachers don't necessarily have the most collaborative schools. Teacher satisfaction is complex, and we have explored a very small part of the picture.
 
 # Conclusion:
 
 Overall, our models didn't completely explain the variation in the data. We expected real datasets to be messier than the ones we had dealt with in problem sets, and so we were pleased with the observations we did find.
 
-__insert findings here lol__
+TODO: __insert findings here lol__
 
 Before we started looking into the data, we expected there to be a lot more unsatisfied teachers than there actually were. Indeed, if we take `sat_avg` scores of above 2.5 to mean that the respondent is generally satisfied (if on average, they responded Agree or Strongly Agree more than Disagree or Strongly Disgree on the teacher satisfaction questions), then
+
 ```{r, echo=TRUE}
 nrow(teacher_data[teacher_data$sat_avg >=2.5,])/nrow(teacher_data)
 ```
-of our respondents were satisfied. Of course, this is a very low baseline (it just means the teacher didn't respond "Agree" or "Strongly Agree" to a question like "I regret that I decided to become a teacher.") If we were to collect the data particularly to understand how various factors affect teacher satisfication. we would want to get a more precise sense of how satisfied or unsatisfied teachers are about specific aspects of teaching. We might ask respondents to our survey to rate, on a scale from 1 - 10, their satisfaction with things like working conditions, pay, sense of impact, and more. 
 
+of our respondents were satisfied. Of course, this is a very low baseline (it just means the teacher didn't respond "Agree" or "Strongly Agree" to a question like "I regret that I decided to become a teacher.") If we were to collect the data particularly to understand how various factors affect teacher satisfication, we would want to get a more precise sense of how satisfied or unsatisfied teachers are about specific aspects of teaching. We might ask respondents to our survey to rate, on a scale from 1 - 10, their satisfaction with things like working conditions, pay, sense of impact, and more. 
 
- conclusion - we don’t know how many teachers were sampled comparatively by country - we know it was no more than 22 per school, but were unable to analyze how representative our sample was of a country as a whole
-in addition,  there were some country codes that were just cities - all our china teachers came from shanghai 
+As another problem, we don’t know how many teachers were sampled comparatively by country - we know it was no more than 22 per school, but were unable to analyze how representative our sample was of a country as a whole. In addition, there were some country codes that were just cities (e.g. all our china teachers came from Shanghai).
 
--also, could have analyzed principal data 
 As far as concerns about the data, when we did our data cleaning, we did find some suspicious responses. There were things we could say were impossible, such as working longer than one has been alive, but we could have other incorrectly reported responses that we weren't  able to immediately mark as suspicious. Because all of the data was a self reported survey, inaccurate/falsely reported answers were pretty inevitable, but are still a concern about the data.
 
-
 One area that our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, so that it was easier to visualize and interpret our results by group of countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a satistically significant difference.
-
-
 
 ### Code Appendix
 Code Outputs
@@ -632,7 +628,7 @@ data$train_stat <- relevel(data$train_stat, "No")
 ```
 
 
-*note, we need to figure out how many code chunks in final, and then remove the last one here, because otherwise the datacleaning code will be printed twice 
+*TODO: note, we need to figure out how many code chunks in final, and then remove the last one here, because otherwise the datacleaning code will be printed twice 
 ```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
 
 ```
