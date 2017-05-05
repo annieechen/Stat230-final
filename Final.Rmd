@@ -512,9 +512,10 @@ As another problem, we don’t know how many teachers were sampled comparatively
 
 As far as concerns about the data, when we did our data cleaning, we did find some suspicious responses. There were things we could say were impossible, such as working longer than one has been alive, but we could have other incorrectly reported responses that we weren't able to immediately mark as suspicious. Because all of the data was a self reported survey, inaccurate/falsely reported answers were pretty inevitable, and are still a concern about the data.
 
-One area where our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, so that it was easier to visualize and interpret our results by group of countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a satistically significant difference.
+One area where our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, and ended up not using it because we wanted to capture the differences in individual countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a statistically significant difference.
 
 ### Code Appendix
+
 Code Outputs
 
 ```{r}
@@ -547,14 +548,15 @@ country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
 ```
 
 
-```{r, ref.label=knitr::all_labels()[-"data_cleaning"],echo=TRUE,eval=FALSE}
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
 
 ```
 
 
-Data Cleaning Code from Data Exploration.Rmd
 
-```{r data_cleaning, eval=FALSE, echo=TRUE}
+
+```{r data_cleaning, eval=FALSE, echo=FALSE}
+# Data Cleaning code from Data Exploration
 # Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
 lower_second_data <- read.spss("SPSS_International/BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
 
