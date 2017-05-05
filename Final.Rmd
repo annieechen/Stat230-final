@@ -207,18 +207,21 @@ To address our first research question, and to try to identify which variables a
 
 Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look several more plots of the data against our response variable, before diving into any linear regression models:
 ```{r, fig.height=2, message=FALSE, warning=FALSE}
-plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + geom_boxplot() + labs(title="Teacher Training Status vs Teacher Satisfaction", y="Teacher Satisfaction (low to high)")
+plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + 
+  geom_boxplot() +
+  labs(title="Teacher Training Status vs Teacher Satisfaction", y="Teacher Satisfaction (low to high)") +
+  theme(axis.text=element_text(size=6),
+        axis.title=element_text(size=6),
+        plot.title=element_text(size=8))
 plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05) +
   labs(title="Years Spent as a Teacher
        vs Teacher Satisfaction",
        x="Years Spent as a Teacher",
-       y="Teacher Satisfaction (low to high)")
+       y="Teacher Satisfaction (low to high)") +
+  theme(axis.text=element_text(size=6),
+        axis.title=element_text(size=6),
+        plot.title=element_text(size=8))
 
-#plot4 <- teacher_data %>% ggplot(aes(x=prep_C, y=sat_avg)) + geom_boxplot() +
-#  labs(title="Sense of Preparation for Classroom
-#       Practice vs Teacher Satisfaction",
-#       x="Degree of Preparedness for Classroom Practice (self reported)",
-#       y="Teacher Satisfaction (low to high)")
 grid.arrange(plot1, plot2, ncol=2)
 ```
 
