@@ -443,8 +443,8 @@ sPDF1 <- joinCountryData2Map(country_avg, joinCode = "ISO3", nameJoinColumn = "c
 ```
 
 ```{r, fig.height=2.5, fig.width=9, message=FALSE, warning=FALSE}
-par(mar=c(0.1, 0.1, 0.1, 0.1))
-mapParams1 <- mapCountryData(sPDF1, nameColumnToPlot = "mean_satisfaction", colourPalette="terrain", oceanCol = "lightblue", missingCountryCol="gray", addLegend = FALSE)
+ par(mar=c(0,0,1,0))
+mapParams1 <- mapCountryData(sPDF1, nameColumnToPlot = "mean_satisfaction", colourPalette="terrain", oceanCol = "lightblue", missingCountryCol="gray", addLegend = FALSE, mapTitle = "Mean Satisfaction By Country")
 do.call( addMapLegend, c(mapParams1, legendWidth=0.5, legendShrink=0.5))
 ```
 
