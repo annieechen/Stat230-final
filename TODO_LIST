@@ -23,7 +23,6 @@ numbered 1 through 4
 
 *fiddle with legends and text sizes for graphs
 
-
 check assumptions for ANOVA stuff???
 add labels to all the graphs
 add variables we created to data section
@@ -32,19 +31,7 @@ need to analyze direction/sign of coefficients
 
 do we need sat_avg vs region plot if we have country map plot?
 
-
-
 for part 3 in question 2 —> should we do pairwise test?
-
-What is this section for?:
-# Collab and region LM
-lmcolreg <- lm(sat_avg ~ region*as.numeric(collab), data=teacher_data)
-# prep_A and region LM
-lmpareg <- lm(sat_avg ~ region*as.numeric(prep_A), data=teacher_data)
-# prep_B and region LM
-lmpbreg <- lm(sat_avg ~ region*as.numeric(prep_B), data=teacher_data)
-# prep_C and region LM
-lmpcreg <- lm(sat_avg ~ region*as.numeric(prep_C), data=teacher_data)
 
 for part 2, go back to 3 mosaic plots, prep A, B, C
 
