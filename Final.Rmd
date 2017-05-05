@@ -198,32 +198,28 @@ Now, looking at the plot on the right, we can see that there are points above th
 
 ```{r, echo=TRUE}
 age_start <- teacher_data$age - teacher_data$years_teacher
-nrow(teacher_data[age_start < 15 & !is.na(age_start),])
 teacher_data[age_start < 15 & !is.na(age_start), "years_teacher"] <- NA
 ```
 
 ### Analysis for Research Question 1 - Linear Regression
 
-To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to create a linear model.
-
-Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look several more plots of the data against our response variable, before diving into any linear regression models:
+To address our first research question, and to try to identify which variables are the best indicators of teacher job satisfaction, we are going to create a linear model. Although our earlier plot of satisfaction against the degree of collaboration at the school shows a clear linear trend, let's look several more plots of the data against our response variable, before diving into any linear regression models:
 
 ```{r, fig.height=2, fig.width=9, message=FALSE, warning=FALSE}
-plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + geom_boxplot() + labs(title="Teacher Training Status vs Teacher Satisfaction", y="Teacher Satisfaction (low to high)")
+plot1 <- teacher_data %>% filter(!is.na(teacher_data$train_stat)) %>% ggplot(aes(x=train_stat, y=sat_avg)) + geom_boxplot() +
+  labs(title="Teacher Training Status vs Teacher Satisfaction",
+       x = "Training Status",
+       y="Teacher Satisfaction (low to high)")
 plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(alpha=0.05) +
   labs(title="Years Spent as a Teacher
        vs Teacher Satisfaction",
        x="Years Spent as a Teacher", y="")
 plot3 <- teacher_data %>% filter(!is.na(prep_A)) %>% ggplot(aes(x=prep_A, y=sat_avg)) + geom_boxplot() + labs(title="Preparation vs Satisfaction", x="Prepared for the Content I Teach", y="")
 
-#plot4 <- teacher_data %>% ggplot(aes(x=prep_C, y=sat_avg)) + geom_boxplot() +
-#  labs(title="Sense of Preparation for Classroom
-#       Practice vs Teacher Satisfaction",
-#       x="Degree of Preparedness for Classroom Practice (self reported)",
-#       y="Teacher Satisfaction (low to high)")
 grid.arrange(plot1, plot2, plot3, ncol=3)
 ```
 
+From these plots we can see that teacher's training status doesn't seem to have a huge relationship with teacher satisfaction, however the median of people who did receive some type of training is slightly higher than those who didn't have any training.  There also appears to be some linear reglationship between years spent teaching and teacher satisfaction in the center graph.  And in the graph on the right, there does seem to be differences in teacher satisfaction between different levels of preparedness.  Consequently, it does seem to be worth exploring a linear model, where we try to use all of our predictors to predict teacher satisfaction.
 
 ```{r}
 # In order to have easier control over which predictors to use in our model, below we create several lists of indices that we might want to include or exclude as a group
@@ -461,7 +457,7 @@ td_country$country <- factor(td_country$country, levels=c("SVK", "JPN",  "SRB", 
 
 Based on the predictors affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively, in those factors.
 
-```{r, fig.height=3, fig.width=8, message=FALSE, warning=FALSE}
+```{r, fig.height=2.5, fig.width=8, message=FALSE, warning=FALSE}
 # collab plot
 p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaboratie school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
@@ -480,7 +476,7 @@ anova(lm(as.numeric(avg_prep) ~ country, data=teacher_data))
 
 Looking at the first plot, there isn't really any trend, but Mexico jumps out as an outlier. It's the country with the highest teacher satisfaction, but almost 30% of teachers say their school isn't collaborative. Does this mean that collaboration doesn't matter as much to satisfaction in Mexico? We c
 
-```{r, fig.height=1}
+```{r, fig.height=2}
 td_country %>%
     filter(country == "MEX") %>% filter(!is.na(collab)) %>%
     ggplot(aes(x=collab, y=sat_avg, col=country)) + geom_boxplot(varwidth=TRUE) + labs(title="School Collaboration vs Satisfaction in Mexico")
