@@ -552,14 +552,32 @@ One area that our analysis would have benefited from other data sources would be
 
 
 
-## Code Appendix
+### Code Appendix
 Code Outputs
 
 ```{r}
 pairwise.t.test(teacher_data$sat_avg, teacher_data$region, p.adj="bonf")
 ```
 
+##### Summary 1
+```{r}
+summary(m_country)
+```
 
+##### Summary 2
+```{r}
+summary(m_region)
+```
+
+##### Summary 3
+```{r}
+summary(m_final)
+```
+
+##### Summary 4
+```{r}
+confint(m_final)
+```
 
 Data Cleaning Code from Data Exploration.Rmd
 ```{r data_cleaning,eval=FALSE}
