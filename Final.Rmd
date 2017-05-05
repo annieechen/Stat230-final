@@ -334,7 +334,7 @@ x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age
 
 Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:We can see from the histogram of sat_avg (Plot 1, displayed in the Dataset section), that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. 
 
-```{r, fig.height=2, fig.width=8, message=FALSE, warning=FALSE}
+```{r, fig.height=2, fig.width=9, message=FALSE, warning=FALSE}
 h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() +
   labs(title="Histogram of Time Spent on
        Teaching Activities",
@@ -482,7 +482,6 @@ Looking at the first plot, there isn't really any trend, but Mexico jumps out as
 td_country %>%
     filter(country == "MEX") %>% filter(!is.na(collab)) %>%
     ggplot(aes(x=collab, y=sat_avg, col=country)) + geom_boxplot(varwidth=TRUE) + labs(title="School Collaboration vs Satisfaction in Mexico")
-
 ```
 
 Teacher satisfaction is still correlated positively with teacher satisfaction in Mexico, so there must be some other factor that makes the average satisfaction in Mexico higher, other than having a higher level of collaboration.
@@ -511,9 +510,10 @@ As another problem, we don’t know how many teachers were sampled comparatively
 
 As far as concerns about the data, when we did our data cleaning, we did find some suspicious responses. There were things we could say were impossible, such as working longer than one has been alive, but we could have other incorrectly reported responses that we weren't able to immediately mark as suspicious. Because all of the data was a self reported survey, inaccurate/falsely reported answers were pretty inevitable, and are still a concern about the data.
 
-One area where our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, so that it was easier to visualize and interpret our results by group of countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a satistically significant difference.
+One area where our analysis would have benefited from other data sources would be countries. We created our `regions` variable using the World Health Organization regions categories, and ended up not using it because we wanted to capture the differences in individual countries. However, there are many other ways we could have tried to categorize the countries - for instance, because more collaborative school environments correlated with higher teacher satisfaction, we could have tried to group the countries by their rankings on the individualism vs collectivism scale, to see whether national attitudes made a statistically significant difference.
 
 ### Code Appendix
+
 Code Outputs
 
 ```{r}
@@ -546,8 +546,15 @@ country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
 ```
 
 
-Data Cleaning Code from Data Exploration.Rmd
-```{r data_cleaning,eval=FALSE}
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+
+```
+
+
+
+
+```{r data_cleaning, eval=FALSE, echo=FALSE}
+# Data Cleaning code from Data Exploration
 # Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
 lower_second_data <- read.spss("SPSS_International/BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
 
@@ -619,10 +626,4 @@ data$country <- as.factor(trimws(as.character(data$country)))
 # Clean up train_stat variable so it's easier to work with
 # Make No the first factor, so that if we convert it to numeric, it's easy to have 0 represent No and 1 represent Yes
 data$train_stat <- relevel(data$train_stat, "No")
-```
-
-
-*TODO: note, we need to figure out how many code chunks in final, and then remove the last one here, because otherwise the datacleaning code will be printed twice 
-```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
-
 ```
