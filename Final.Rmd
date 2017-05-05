@@ -334,7 +334,7 @@ x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age
 
 Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:We can see from the histogram of sat_avg (Plot 1, displayed in the Dataset section), that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. 
 
-```{r, fig.height=2, fig.width=8, message=FALSE, warning=FALSE}
+```{r, fig.height=2, fig.width=9, message=FALSE, warning=FALSE}
 h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() +
   labs(title="Histogram of Time Spent on
        Teaching Activities",
@@ -484,7 +484,6 @@ Looking at the first plot, there isn't really any trend, but Mexico jumps out as
 td_country %>%
     filter(country == "MEX") %>% filter(!is.na(collab)) %>%
     ggplot(aes(x=collab, y=sat_avg, col=country)) + geom_boxplot(varwidth=TRUE) + labs(title="School Collaboration vs Satisfaction in Mexico")
-
 ```
 
 Teacher satisfaction is still correlated positively with teacher satisfaction in Mexico, so there must be some other factor that makes the average satisfaction in Mexico higher, other than having a higher level of collaboration.
@@ -548,8 +547,14 @@ country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
 ```
 
 
+```{r, ref.label=knitr::all_labels()[-"data_cleaning"],echo=TRUE,eval=FALSE}
+
+```
+
+
 Data Cleaning Code from Data Exploration.Rmd
-```{r data_cleaning,eval=FALSE}
+
+```{r data_cleaning, eval=FALSE, echo=TRUE}
 # Lower-secondary-school teacher data (international file, all countries) is the file titled BTGINTT2
 lower_second_data <- read.spss("SPSS_International/BTGINTT2.sav", to.data.frame=TRUE, use.missings=TRUE)
 
@@ -621,10 +626,4 @@ data$country <- as.factor(trimws(as.character(data$country)))
 # Clean up train_stat variable so it's easier to work with
 # Make No the first factor, so that if we convert it to numeric, it's easy to have 0 represent No and 1 represent Yes
 data$train_stat <- relevel(data$train_stat, "No")
-```
-
-
-*TODO: note, we need to figure out how many code chunks in final, and then remove the last one here, because otherwise the datacleaning code will be printed twice 
-```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
-
 ```
