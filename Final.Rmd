@@ -451,10 +451,9 @@ anova(msatreg)
 
 When we first began analyzing factors by country, we grouped the countries into 8 regions using the World Health Organization geographical categories. The difference in mean satisfaction was still statistically significant (p-value < 0.05) across all region pairs other than Western Europe vs Eastern Europe, as shown in the pairwise.t.test in the appendix.
 
-However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania), and decided to analyze that subset of countries.
+However, we felt that geographical groups didn't capture all the factors that might influence teacher satisfaction by country (for instance, China and Australia were grouped together geographically, but have vastly different governments). Thus, we took the 2 most satisfied countries (Mexico and Malaysia), 2 least satisfied countries (Slovak Republic and Japan) , and two countries in the middle of the list (Serbia and Romania), and decided to analyze that subset of countries. (See "Selected Countries" in Appendix)
 
 ```{r}
-country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
 td_country <-teacher_data[teacher_data$country %in% c("SVK", "JPN", "SRB", "ROU", "MYS", "MEX"),]
 # remove unused factors
 td_country$country <- factor(td_country$country, levels=c("SVK", "JPN",  "SRB", "ROU", "MYS", "MEX"))
@@ -542,6 +541,12 @@ summary(m_final)
 ```{r}
 confint(m_final)
 ```
+
+##### Selected Countries
+```{r}
+country_avg[order(country_avg$mean_satisfaction)[c(1,2,18,19,35,36)],]
+```
+
 
 Data Cleaning Code from Data Exploration.Rmd
 ```{r data_cleaning,eval=FALSE}
