@@ -266,7 +266,7 @@ m_region <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("country"))])
 summary(m_region)$r.squared
 ```
 
-If one looks at the two summaries (Summaries 1 and 2 in the Appendix), one can see that a large amount of the country categories have significant p-values in the first model, and all of the region categories have significant p-values in the second model.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1983.  This means that removing some geographical information by condensing the countries into regions caused a drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model. We can also see that train_stat was not significant in either of the models, so let's also remove that from future models.
+If one looks at the two summaries (Summaries 1 and 2 in the Appendix), one can see that a large amount of the country categories have coefficients with significant p-values in the first model, and all of the region categories have coefficients with significant p-values in the second model.  However, the R-squared value for the model using country data was 0.2449, and the R-squared value for the model with the region predictor was 0.1983.  This means there was drop in R-squared by roughly 19%, which is quite a bit.  As a result, we are going to use the country data in the linear model. We can also see that train_stat was not significant in either of the models, so let's remove that from future models.
 
 Lastly, it seems very possible that age and years_teacher are correlated, since teachers that have been teaching for longer are likely to be older.  As a result, we probably don't need both predictors in our linear model.  Let's check the correlation:
 
@@ -274,7 +274,7 @@ Lastly, it seems very possible that age and years_teacher are correlated, since 
 cor(teacher_data$age, teacher_data$years_teacher, use = "complete.obs")
 ```
 
-Age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric.  Two options are, the age at which the teacher started teaching, and the ratio of years_teacher to age. Perhaps the time in your life when you start teaching may affect how satisfied you are.  For example, perhaps people who start teaching really late are more satisfied in their jobs, as they likely did a lot more research on what the teaching profession was like before making a large career change from their previous job.  It's also possible that the fraction of your life that you have spent teaching, affects how satisfied you are.  
+Age and years_teacher are pretty highly correlated (correlation of 0.846). As a result, let's see if there's another way we can use our age and years_teacher data, and combine it into one metric. One option is the ratio of years_teacher to age. It's possible that the fraction of your life that you have spent teaching, affects how satisfied you are.    
 
 ```{r}
 teacher_data$age_start <- age_start
@@ -297,15 +297,7 @@ plot2 <- teacher_data %>% ggplot(aes(x=years_teacher, y=sat_avg)) + geom_point(a
   theme(axis.text=element_text(size=6),
         axis.title=element_text(size=6),
         plot.title=element_text(size=8))
-plot3 <- teacher_data %>% ggplot(aes(x=age_start, y=sat_avg)) + geom_point(alpha=0.05) +
-  labs(title="Age at Start of Teaching Career
-       vs Teacher Satisfaction",
-       x="Age (years)",
-       y="Teacher Satisfaction (low to high)") +
-  theme(axis.text=element_text(size=6),
-        axis.title=element_text(size=6),
-        plot.title=element_text(size=8))
-plot4 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05) +
+plot3 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha=0.05) +
   labs(title="Fraction of Life Spent Teaching
        vs Teacher Satisfaction",
        x="Fraction of Life Spent Teaching",
@@ -313,7 +305,7 @@ plot4 <- teacher_data %>% ggplot(aes(x=age_ratio, y=sat_avg)) + geom_point(alpha
   theme(axis.text=element_text(size=6),
         axis.title=element_text(size=6),
         plot.title=element_text(size=8))
-grid.arrange(plot1, plot2, plot3, plot4, ncol=4)
+grid.arrange(plot1, plot2, plot3, ncol=3)
 ```
 
 From the plots above, it looks like years_teacher has the clearest linear relationship with sat_avg, so we're going to use that predictor in our linear model.
@@ -477,7 +469,7 @@ td_country$country <- factor(td_country$country, levels=c("SVK", "JPN",  "SRB", 
 
 Based on the predictors affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively, in those factors.
 
-```{r}
+```{r, fig.height=2.5, fig.width=8, message=FALSE, warning=FALSE}
 # collab plot
 p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaboratie school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
@@ -486,6 +478,8 @@ p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, 
 p43 <- td_country %>% filter(!is.na(prep_B)) %>% ggplot(aes(x = product(prep_B, country), fill=factor(prep_B)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the pedagogy of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
 
 p44 <- td_country %>% filter(!is.na(prep_C)) %>% ggplot(aes(x = product(prep_C, country), fill=factor(prep_C)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the classroom practice of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+
+grid.arrange(p41,p42,p43,p44, ncol=2)
 ```
 
 Looking at the first plot, there isn't really any trend, but Mexico jumps out as an outlier. It's the country with the highest teacher satisfaction, but almost 30% of teachers say their school isn't collaborative. Does this mean that collaboration doesn't matter as much to satisfaction in Mexico? We c
