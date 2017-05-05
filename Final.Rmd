@@ -254,14 +254,12 @@ One of the things we are interested in is how geography impacts teacher satisfac
 
 Linear model using country (summary has been left out for space):
 ```{r, echo=TRUE}
-# Try model with country variable and not region
 m_country <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("region"))])
 summary(m_country)$r.squared
 ```
 
 Linear model using region (summary has been left out for space):
 ```{r, echo=TRUE}
-# Try model with region variable and not country
 m_region <- lm(sat_avg ~ ., data=x[,-which(names(x) %in% c("country"))])
 summary(m_region)$r.squared
 ```
@@ -328,14 +326,12 @@ teacher_data$avg_prep <- apply(data, 1, mean)
 
 Now let's make a new dataset with all of the variable selections we just made. So we need to remove region, train_stat, age, age_start, age_ratio, and all three prep predictors.
 
-```{r}
+```{r, echo=TRUE}
 x.new <- teacher_data[, -c(sat_indices, na_cols, subject_indices, prep_indices)]
 x.new <- na.omit(x.new[, -which(names(x.new) %in% c("train_stat", "region", "age", "age_start", "age_ratio"))])
 ```
 
-Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:
-
-We can see from the histogram of sat_avg (Plot 1, displayed in the Dataset section), that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. 
+Now let's see if all of the variables that we've decided to use for the linear model, are normally distributed, or if some transformations might be helpful:We can see from the histogram of sat_avg (Plot 1, displayed in the Dataset section), that although it isn't perfectly normal, it is close enough that it probably doesn't warrant any transformation of the variable. 
 
 ```{r, fig.height=2, fig.width=8, message=FALSE, warning=FALSE}
 h1 <- x.new %>% ggplot(aes(x=total_time)) + geom_histogram() +
@@ -378,7 +374,7 @@ grid.arrange(h1, h2, h3, h4, ncol = 4)
 
 Three of the plots above, although not perfectly normal, don't have a huge amount of skew.  In fact, the histogram for time spent on teaching related activities has very little skew.  As a result, we probably don't need to transform any of these variables.  The number of subjects histogram does have a lot of skew.  However, we tried several different transformations, and none of them seemed to help much.  After the creating the model, we will look at the normal Q-Q plot to make sure the normality assumption wasn't violated too significantly.
 
-Model without train_stat (summary removed from report for the sake of space):
+Now that we have a new data set with all of our variable selections, let's make a final model (summary removed from report for the sake of space):
 ```{r, echo=TRUE}
 m_final <- lm(sat_avg ~ ., data=x.new)
 summary(m_final)$r.squared
@@ -469,15 +465,15 @@ td_country$country <- factor(td_country$country, levels=c("SVK", "JPN",  "SRB", 
 
 Based on the predictors affected job satisfaction in Part 1, we can see which countries stand out, either positively or negatively, in those factors.
 
-```{r, fig.height=2.5, fig.width=8, message=FALSE, warning=FALSE}
+```{r, fig.height=4, fig.width=8, message=FALSE, warning=FALSE}
 # collab plot
-p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaboratie school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p41 <- td_country %>% filter(!is.na(collab)) %>% ggplot(aes(x = product(collab, country), fill=factor(collab)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='There is a collaboratie school culture.') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
-p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, country), fill=factor(prep_A)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the content of the subjects you teach?') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p42 <- td_country %>% filter(!is.na(prep_A)) %>% ggplot(aes(x = product(prep_A, country), fill=factor(prep_A)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the content of the subjects you teach?') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
-p43 <- td_country %>% filter(!is.na(prep_B)) %>% ggplot(aes(x = product(prep_B, country), fill=factor(prep_B)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the pedagogy of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p43 <- td_country %>% filter(!is.na(prep_B)) %>% ggplot(aes(x = product(prep_B, country), fill=factor(prep_B)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the pedagogy of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
-p44 <- td_country %>% filter(!is.na(prep_C)) %>% ggplot(aes(x = product(prep_C, country), fill=factor(prep_C)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the classroom practice of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE))
+p44 <- td_country %>% filter(!is.na(prep_C)) %>% ggplot(aes(x = product(prep_C, country), fill=factor(prep_C)), na.rm=TRUE) +  geom_mosaic() + scale_fill_manual(values=c("red3","indianred1", "lightgreen", "green3")) +  theme(axis.text.x=element_text(angle=-25, hjust= .1)) + labs(x="Country", title='How prepared do you feel for the classroom practice of the subjects you teach') + guides(fill=guide_legend(title = "Response", reverse = TRUE)) + theme(axis.text=element_text(size=6), axis.title=element_text(size=6), plot.title=element_text(size=8))
 
 grid.arrange(p41,p42,p43,p44, ncol=2)
 ```
